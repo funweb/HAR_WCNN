@@ -1,0 +1,80 @@
+datasets:
+  base_dir:
+    F:/PaperEdit/HARedit/datasets/casas
+  names:
+    - cairo
+    - milan
+    - kyoto7
+    - kyoto8
+    - kyoto11
+  short_len:
+    5
+  ksplit:
+    3
+  shuffle:
+    False  # fit 是否打乱顺序，一般这个为 False，但是生成器的一般为 True
+
+public:
+  kfoldSeed:
+    7
+  seed:
+    7
+  verbose:
+    2
+  identifier:
+    20200725
+  purpose:
+    2020年7月25日跑基于kyoto11LY的模型  # 更改模型训练的目的
+
+
+tfidf:
+  power:
+    3
+
+distance_int:
+  1  # 这个参数应该是配套的全局共享的吧
+
+# methods
+WCNN:
+  patience:
+    200  # 这个调整时间
+  input_dim:
+    128  # 按理说这个应该是设置为数据类型的大小的
+    # 'units': 128,  # 我自己设置的
+  units:
+    64  # deep 论文中的，这个小的可以尝试一下。。
+  data_max_lenght:
+    2000
+  epochs:
+    2000
+  batchSize:
+    64
+  model_name:
+    WCNN
+  # LSTM  # BiLSTM  # Ensemble2LSTM  # no_embedding_LSTM
+  # kyoto11LY  # deep_model  # zzz
+  optimizer:
+    rms
+
+
+# methods
+LSTM:
+  patience:
+    200  # 这个调整时间
+  input_dim:
+    128  # 按理说这个应该是设置为数据类型的大小的
+    # 'units': 128,  # 我自己设置的
+  units:
+    64  # deep 论文中的，这个小的可以尝试一下。。
+  data_max_lenght:
+    2000
+  epochs:
+    200
+  batchSize:
+    64
+  model_name:
+    LSTM
+  # LSTM  # BiLSTM  # Ensemble2LSTM  # no_embedding_LSTM
+  # kyoto11LY  # deep_model  # zzz
+  optimizer:
+    adam

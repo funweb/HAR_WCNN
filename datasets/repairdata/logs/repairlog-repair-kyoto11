@@ -1,0 +1,104 @@
+Start processing time: 2022-02-02 16:12:31.766461 
+End processing time: 2022-02-02 16:12:53.936096 
+Processing time: 22.169635 
+
+The number of rows repaired is: 72125
+old data: 2009-08-30 10:44:53	M047	ON
+new data: 2009-08-30 10:44:53.000000	M047	ON
+
+The number of rows repaired is: 185070
+old data: 2009-09-07 17:11:19	M010	ON
+new data: 2009-09-07 17:11:19.000000	M010	ON
+
+The number of rows repaired is: 302602
+old data: 2009-09-15 17:05:00 M033 ON
+new data: 2009-09-15 17:05:00.000000 M033 ON
+
+The number of rows repaired is: 649335
+old data: 2009-10-13 08:49:31	M035	ON
+new data: 2009-10-13 08:49:31.000000	M035	ON
+
+The number of rows repaired is: 717131
+old data: 2009-10-20 11:05:28	D001	OPEN
+new data: 2009-10-20 11:05:28.000000	D001	OPEN
+
+The number of rows repaired is: 836582
+old data: 2009-11-04 16:08:31	P001	5611
+new data: 2009-11-04 16:08:31.000000	P001	5611
+
+The number of rows repaired is: 870570
+old data: 2009-11-07 07:05:04	P001	3915
+new data: 2009-11-07 07:05:04.000000	P001	3915
+
+The number of rows repaired is: 886832
+old data: 2009-11-08 11:34:31	P001	2589
+new data: 2009-11-08 11:34:31.000000	P001	2589
+
+The number of rows repaired is: 1134867
+old data: 2009-11-29 15:59:11	M047	OFF
+new data: 2009-11-29 15:59:11.000000	M047	OFF
+
+The number of rows repaired is: 1171834
+old data: 2009-12-01 16:41:58	M006	OFF
+new data: 2009-12-01 16:41:58.000000	M006	OFF
+
+The number of rows repaired is: 1436303
+old data: 2010-01-12 13:59:12	M047	ON
+new data: 2010-01-12 13:59:12.000000	M047	ON
+
+The number of rows repaired is: 1441421
+old data: 2010-01-12 22:46:01	M031	ON
+new data: 2010-01-12 22:46:01.000000	M031	ON
+
+The number of rows repaired is: 1496807
+old data: 2010-01-17 19:06:52	M032	OFF
+new data: 2010-01-17 19:06:52.000000	M032	OFF
+
+The number of rows repaired is: 1576423
+old data: 2010-01-22 01:09:32	M026	OFF
+new data: 2010-01-22 01:09:32.000000	M026	OFF
+
+The number of rows repaired is: 1577336
+old data: 2010-01-22 01:41:23	M046	OFF
+new data: 2010-01-22 01:41:23.000000	M046	OFF
+
+The number of rows repaired is: 1691959
+old data: 2010-01-31 14:26:09	P001	587
+new data: 2010-01-31 14:26:09.000000	P001	587
+
+The number of rows repaired is: 1733505
+old data: 2010-02-02 22:14:00	P001	3338
+new data: 2010-02-02 22:14:00.000000	P001	3338
+
+The number of rows repaired is: 1755083
+old data: 2010-02-04 00:42:05	M032	ON
+new data: 2010-02-04 00:42:05.000000	M032	ON
+
+The number of rows repaired is: 2037674
+old data: 2010-02-25 09:06:23	P001	2838
+new data: 2010-02-25 09:06:23.000000	P001	2838
+
+The number of rows repaired is: 2242846
+old data: 2010-03-12 01:13:00	M024	ON
+new data: 2010-03-12 01:13:00.000000	M024	ON
+
+The number of rows repaired is: 2518494
+old data: 2010-04-07 01:55:31	M049	ON
+new data: 2010-04-07 01:55:31.000000	M049	ON
+
+The number of rows repaired is: 2739793
+old data: 2010-04-26 10:50:44	M018	OFF
+new data: 2010-04-26 10:50:44.000000	M018	OFF
+
+The number of rows repaired is: 2758877
+old data: 2010-04-27 23:53:54	M032	ON
+new data: 2010-04-27 23:53:54.000000	M032	ON
+
+The number of rows repaired is: 2769317
+old data: 2010-04-28 11:35:05	M008	ON
+new data: 2010-04-28 11:35:05.000000	M008	ON
+
+The number of rows repaired is: 2793435
+old data: 2010-04-30 07:50:30	M037	OFF
+new data: 2010-04-30 07:50:30.000000	M037	OFF
+

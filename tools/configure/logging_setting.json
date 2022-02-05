@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "simple": {
+      "format": "[%(asctime)s - %(name)s - %(levelname)s:{%(funcName)s:%(lineno)d} in %(pathname)s]: %(message)s",
+      "datefmt":"%Y-%m-%d %H:%M:%S"
+    },
+    "extra": {
+      "format": "%(asctime)-16s %(name)-8s %(filename)-12s %(lineno)-6s %(funcName)-30s %(levelname)-8s %(message)s",
+      "datefmt": "%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console_debug_handler": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "console_info_handler": {
+      "class": "logging.StreamHandler",
+      "level": "INFO",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "console_warning_handler": {
+      "class": "logging.StreamHandler",
+      "level": "WARNING",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "console_error_handler": {
+      "class": "logging.StreamHandler",
+      "level": "ERROR",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "console_critical_handler": {
+      "class": "logging.StreamHandler",
+      "level": "CRITICAL",
+      "formatter": "simple",
+      "stream": "ext://sys.stdout"
+    },
+    "file_debug_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "simple",
+      "filename": "./logging/debugs.log",
+     "maxBytes": 10485760,
+      "backupCount": 40,
+      "encoding": "utf8"
+    },
+    "file_info_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "INFO",
+      "formatter": "simple",
+      "filename": "./logging/infos.log",
+     "maxBytes": 10485760,
+      "backupCount": 40,
+      "encoding": "utf8"
+    },
+    "file_warning_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "WARNING",
+      "formatter": "simple",
+      "filename": "./logging/warnings.log",
+     "maxBytes": 10485760,
+      "backupCount": 40,
+      "encoding": "utf8"
+    },
+    "file_error_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "ERROR",
+      "formatter": "simple",
+      "filename": "./logging/errors.log",
+     "maxBytes": 10485760,
+      "backupCount": 4,
+      "encoding": "utf8"
+    },
+    "file_critical_handler": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "CRITICAL",
+      "formatter": "simple",
+      "filename": "./logging/criticals.log",
+      "maxBytes": 10485760,
+      "backupCount": 4,
+      "encoding": "utf8"
+    }
+  },
+
+  "loggers": {
+    "Customize_error": {
+      "level": "ERROR",
+      "handlers": [
+        "console_error_handler"
+      ],
+      "propagate": "no"
+    },
+    "Customize_info": {
+      "level": "INFO",
+      "handlers": [
+        "console_error_handler"
+      ],
+      "propagate": "no"
+    }
+  },
+
+  "root": {
+    "level": "ERROR",
+    "handlers": [
+      "file_info_handler",
+      "file_error_handler"
+    ]
+  }
+}

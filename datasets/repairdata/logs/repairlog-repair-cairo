@@ -1,0 +1,32 @@
+Start processing time: 2022-02-02 16:12:15.606261 
+End processing time: 2022-02-02 16:12:21.276064 
+Processing time: 5.669803 
+
+The number of rows repaired is: 15888
+old data: 2009-06-11 08:15:29	M014	OFF
+new data: 2009-06-11 08:15:29.000000	M014	OFF
+
+The number of rows repaired is: 55716
+old data: 2009-06-14 10:18:53	M023	ON
+new data: 2009-06-14 10:18:53.000000	M023	ON
+
+The number of rows repaired is: 241766
+old data: 2009-06-25 19:09:49	M015	ON
+new data: 2009-06-25 19:09:49.000000	M015	ON
+
+The number of rows repaired is: 334469
+old data: 2009-07-03 14:29:13	M020	ON
+new data: 2009-07-03 14:29:13.000000	M020	ON
+
+The number of rows repaired is: 423729
+old data: 2009-07-12 11:38:09	M006	OFF
+new data: 2009-07-12 11:38:09.000000	M006	OFF
+
+The number of rows repaired is: 574910
+old data: 2009-07-25 15:50:58	M011	OFF
+new data: 2009-07-25 15:50:58.000000	M011	OFF
+
+The number of rows repaired is: 668297
+old data: 2009-08-01 19:29:39	M021	ON
+new data: 2009-08-01 19:29:39.000000	M021	ON
+
