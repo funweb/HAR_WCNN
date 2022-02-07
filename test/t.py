@@ -1,26 +1,14 @@
-from sklearn.preprocessing import OneHotEncoder
+import re
 
+pattern = r'saved-model-(\d+)-([1-9]\d*\.\d*|0\.\d*[1-9]\d*)-([1-9]\d*\.\d*|0\.\d*[1-9]\d*).hdf5'
+prog = re.compile(pattern)
 
-enc = OneHotEncoder(handle_unknown='ignore')
-X = [['Male', 1], ['Female', 3], ['Female', 2]]
-enc.fit(X)
+str = 'saved-model-0-0.78-0.16.hdf5'
 
-print(enc.categories_)
+matchObj = prog.match(str)
 
-print(enc.transform([['Female', 1], ['Male', 4]]).toarray())
+c_epoch = matchObj.group(1)
+c_loss = matchObj.group(2)
+c_acc = matchObj.group(3)
 
-
-print(enc.inverse_transform([[0, 1, 1, 0, 0], [0, 0, 0, 1, 0]]))
-
-
-print(enc.get_feature_names(['gender', 'group']))
-
-
-
-
-
-
-
-
-
-
+pass
