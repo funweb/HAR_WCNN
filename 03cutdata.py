@@ -5,6 +5,7 @@ import os
 import time
 import json
 from tools import general
+import numpy as np
 
 
 @general.clock
@@ -25,6 +26,7 @@ def cutdataclass(data_dir, data_name, save_file=False):
         end_index = ''
         pair_index = {}
         dic_index = {}
+        dict_length = {"static": [], "detail": []}
 
         # load data
         data_dir = os.path.join(data_dir, '..', 'static')
@@ -33,7 +35,7 @@ def cutdataclass(data_dir, data_name, save_file=False):
         with open(data_static, 'r', encoding="utf-8") as fr2:
             dictclass = json.load(fr2)
 
-        for classtype in dictclass[data_name].keys():
+        for classtype in dictclass[data_name].keys():  # 逐个遍历每项活动
             flag = False
 
             list_data = []
@@ -43,6 +45,7 @@ def cutdataclass(data_dir, data_name, save_file=False):
             end_index = ''
             pair_index = {}
             logindex = 0
+            length_list = []
 
             for i, line in enumerate(datas):
                 try:
@@ -68,9 +71,12 @@ def cutdataclass(data_dir, data_name, save_file=False):
 
                             # log
                             end_index = i
-                            pair_index.update({str(logindex): str(begin_index) + ',' + str(end_index)})
+                            pair_index.update({str(logindex): str(begin_index) + ',' + str(end_index) + ',' + str(
+                                end_index - begin_index)})
+                            length_list.append((end_index - begin_index))
                             if (end_index - begin_index) < 4:
-                                print('What iss the problem? Why is it so short. The length is: %d' % (end_index - begin_index))
+                                print('What iss the problem? Why is it so short. The length is: %d' % (
+                                            end_index - begin_index))
                                 print('Data from：%s, row: %d \n\n' % (classtype, i))
                             logindex = logindex + 1
 
@@ -80,6 +86,10 @@ def cutdataclass(data_dir, data_name, save_file=False):
             class_data.update({classtype: list_data})
 
             # log
+
+            dict_length["static"].append({classtype: "{} +/- {}".format(np.median(length_list), np.std(length_list))})
+            dict_length["detail"].append([length_list])
+
             dic_index.update({classtype: pair_index})
 
             if flag == True:  # I just want to do a verification to avoid some data having a beginning and no end
@@ -110,12 +120,16 @@ def cutdataclass(data_dir, data_name, save_file=False):
             for activity_name in dic_index:
                 fw.writelines('\n%s:\n' % (activity_name))
                 fw.writelines(str(dic_index[activity_name]))
+
+        length_log_name = data_name + "_activities_length.json"
+        with open(os.path.join(dataindex_dir, length_log_name), "w", encoding="utf-8") as fw:
+            json.dump(dict_length, fw)
+
         print('The operation is completed. Now the file has been saved to: %s' % (subdir))
 
 
 @general.clock
 def verifyindex(data_dir, data_name, save_file=False):
-
     static_data_dir = os.path.join(data_dir, '..', 'static')
     data_static = os.path.join(static_data_dir, 'activities.json')
     with open(data_static, 'r', encoding="utf-8") as fr:
@@ -148,7 +162,6 @@ def verifyindex(data_dir, data_name, save_file=False):
 
 
 def saveother_index(data_dir, data_name, save_file=False):
-
     static_data_dir = os.path.join(data_dir, '..', 'static')
     data_static = os.path.join(static_data_dir, 'activities.json')
     with open(data_static, 'r', encoding="utf-8") as fr:
@@ -231,21 +244,23 @@ if __name__ == '__main__':
     for data_name in data_names:
         cutdataclass(data_dir, data_name, save_file=True)
         pass
-    print('Now the first step is to: \n\tthe index value of the source data is obtained. For the next step, it needs to be stored in the corresponding file of config. PS: there is no other type of data yet')
+    print(
+        'Now the first step is to: \n\tthe index value of the source data is obtained. For the next step, it needs to be stored in the corresponding file of config. PS: there is no other type of data yet')
 
     # Step 2
     for data_name in data_names:
         verifyindex(data_dir, data_name, save_file=True)
         pass
-    print('\n\n第二步：\n\tIf there is no problem in the program, it means there is no problem, and it is guaranteed that each line has only the beginning or end of an action')
+    print(
+        '\n\n第二步：\n\tIf there is no problem in the program, it means there is no problem, and it is guaranteed that each line has only the beginning or end of an action')
     print('This second step is only for verification and has no substantive effect.')
 
     # Step 3
     for data_name in data_names:
         saveother_index(data_dir, data_name, save_file=True)
         pass
-    print('\n\nStep 3：\n\tOther index data is generated to the folder and manually copied to config / index + data_ In the name file, add the index of other')
-
+    print(
+        '\n\nStep 3：\n\tOther index data is generated to the folder and manually copied to config / index + data_ In the name file, add the index of other')
 
     # The first step is to log, get the start and end of all activity data, and cut the data into corresponding folders
     # The second step is just verification. If there is no problem data, it indicates that the index value segmentation is correct
@@ -255,4 +270,5 @@ if __name__ == '__main__':
         savecute_data(data_dir, data_name, save_file=True)
         pass
 
-    print('Now that the data has been segmented, we will move to the next step to segment the data according to the distance!')
+    print(
+        'Now that the data has been segmented, we will move to the next step to segment the data according to the distance!')

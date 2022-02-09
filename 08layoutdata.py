@@ -200,17 +200,19 @@ def convertActivities(X, Y, dictActivities, uniActivities, cookActivities):
 if __name__ == '__main__':
     opts = general.load_config()
 
-    for i in range(7):
-        distant_int = i
-        if i == 0:
-            distant_int = 999
-        elif i == 6:
-            distant_int = 9999
+    data_dir = os.path.join(opts["datasets"]["base_dir"], 'ende')
 
-        data_dir = os.path.join(opts["datasets"]["base_dir"], 'ende')
-        data_names = ['cairo', 'kyoto7', 'kyoto8', 'kyoto11', 'milan']
-        data_names = opts["datasets"]["names"]
-        for data_name in data_names:
+    data_names = ['cairo', 'kyoto7', 'kyoto8', 'kyoto11', 'milan']
+    data_names = opts["datasets"]["names"]
+    for data_name in data_names:
+
+        for i in range(7):
+            distant_int = i
+            if i == 0:
+                distant_int = 999
+            elif i == 6:
+                distant_int = 9999
+
             print('\n\ndataset: %s' % (data_name))
             print('data address: %s' % (os.path.join(data_dir, data_name, str(distant_int), data_name + '-dict_ids.npy')))
             dict_ids = np.load(os.path.join(data_dir, data_name, str(distant_int), data_name + '-dict_ids.npy'), allow_pickle=True).item()
