@@ -157,12 +157,13 @@ def train(dataset_name, k, cutdatadir, dict_config):
     # os.path.join(dict_config["datasets_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
     checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
-    general.create_folder(checkpointer_dir)
+    weights_dir = os.path.join(checkpointer_dir, path2name.get_identifier_name(dict_config))
+    general.create_folder(weights_dir)
 
-    base_identifier = path2name.get_identifier_name(dict_config, str(k))
+    # base_identifier = path2name.get_identifier_name(dict_config, str(k))
 
-    file_path = os.path.join(checkpointer_dir, "%s-{epoch:06d}-{loss:.6f}-{val_acc:.6f}.hdf5" % (base_identifier))
-    model_checkpoint = ModelCheckpoint_cus(filepath=file_path,
+    weight_name = os.path.join(weights_dir, "%s-{epoch:06d}-{loss:.6f}-{val_acc:.6f}.hdf5" % (str(k)))
+    model_checkpoint = ModelCheckpoint_cus(filepath=weight_name,
                                            monitor='loss', verbose=1,
                                            save_best_only=False,
                                            save_best_only_period=True,
@@ -181,17 +182,17 @@ def train(dataset_name, k, cutdatadir, dict_config):
                                      )
 
     #### 保存 final_model 和 best_model
-    weight_name = os.path.join(checkpointer_dir, base_identifier + '-final.hdf5')
+    weight_name = os.path.join(weights_dir, str(k) + '-final.hdf5')
     print('ModelCheckpoint 已经保存到 %s' % weight_name)
 
     model.save(weight_name)
     ### -----------  认为 最小loss 是最好的
     min_loss = 128
     best_model_name = ""
-    pattern = r'[Pbest_]?{}-(\d+)-(\d*\.\d*)-(\d*\.\d*).hdf5'.format(base_identifier)
+    pattern = r'[Pbest_]?{}-(\d+)-(\d*\.\d*)-(\d*\.\d*).hdf5'.format(str(k))
 
     prog = re.compile(pattern)
-    for hdf5_name in os.listdir(checkpointer_dir):
+    for hdf5_name in os.listdir(weights_dir):
         matchObj = prog.match(os.path.basename(hdf5_name))
         if matchObj is not None:
             c_epoch = matchObj.group(1)
@@ -199,8 +200,8 @@ def train(dataset_name, k, cutdatadir, dict_config):
             c_acc = matchObj.group(3)
             if float(c_loss) < min_loss:
                 best_model_name = hdf5_name
-    shutil.copy(os.path.join(checkpointer_dir, os.path.basename(best_model_name)),
-                os.path.join(checkpointer_dir, base_identifier + "-best.hdf5"))
+    shutil.copy(os.path.join(weights_dir, os.path.basename(best_model_name)),
+                os.path.join(weights_dir, str(k) + "-best.hdf5"))
     ### -----------  认为 最小loss 是最好的
 
     # weight_name_final_epochs = os.path.join(checkpointer_dir, base_identifier + '-final.hdf5')
@@ -209,7 +210,7 @@ def train(dataset_name, k, cutdatadir, dict_config):
     log_file_path = os.path.join(checkpointer_dir, 'log')  # 日志文件保存路径
     general.create_folder(log_file_path)
 
-    csvFileName = os.path.join(log_file_path, base_identifier + '.csv')
+    csvFileName = os.path.join(log_file_path, str(k) + '.csv')
     pd.read_json(json.dumps(history_LY.history), encoding="utf-8", orient='records').to_csv(csvFileName)
     print('save in: %s' % (csvFileName))
 
@@ -237,11 +238,11 @@ def validation_from_weight(dataset_name, weight_path, cutdatadir, k, dict_config
     dict_config['vocabulary_size'] = len(train_x)
     model = load_model(dict_config)
 
-    base_identifier = path2name.get_identifier_name(dict_config, str(k))
-
     checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
-    weight_name = os.path.join(checkpointer_dir, base_identifier + '-' + flag + '.hdf5')
+    weights_dir = os.path.join(checkpointer_dir, path2name.get_identifier_name(dict_config))
+
+    weight_name = os.path.join(weights_dir, str(k) + '-' + flag + '.hdf5')
 
     model.load_weights(weight_name)
     model = modelsLY.compileModelcus(model, dict_config['optimizer'])
