@@ -51,7 +51,9 @@ WCNN_CONSTANT = {
     # "data_max_lenght": 2000,
     # "epochs": 2000,
     # "batchSize": 64,
-    "optimizer": "rms"
+    "optimizer": "rms",
+    "kernel_number_base": "",
+    "kernel_wide_base": ""
 }
 
 LSTM_CONSTANT = {
@@ -81,7 +83,6 @@ INCEPTION_CONSTANT = {
 METHOD_PARAMETER_TEMPLATE = {
     "kfoldSeed": "7",
     "seed": "7",
-    'want_cut_data': 'False',
 
     "datasets_dir": "",
     "ksplit": "",

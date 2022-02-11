@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import print_function
 import csv
+import re
+import shutil
 from datetime import datetime
 import json
+from glob import glob
 
 import numpy as np
 from keras.callbacks import ModelCheckpoint, CSVLogger
@@ -18,9 +21,11 @@ import tensorflow as tf
 
 # import modelsLY as models
 from classifierModels import modelsLY
-from tools import general
+from tools import general, path2name
 from tools.DataGenerator import MyDataGenerator
-from tools.MyLogger import MyLoger
+from tools.MyLogger import MyLogger
+from tools.configure.constants import METHOD_PARAMETER_TEMPLATE, DATASETS_CONSTANT
+from tools.general import ModelCheckpoint_cus
 
 
 def get_dict_length(dataset_name, distant_int, P=False):
@@ -71,7 +76,7 @@ def datacut(dataset_name, datadir, dict_config):
 
 # Load data in the following format:
 # cutdatadir + '\\' + dataset_name + '-test-y-' + str(k) + '.npy', datas_y[test]
-def load_data(dataset_name, cutdatadir, data_type='train', k=0):
+def load_data(dataset_name, cutdatadir, data_type='train', k=0, data_lenght=2000):
     data_x_path = os.path.join(cutdatadir, dataset_name + '-' + data_type + '-x-' + str(k) + '.npy')
     data_x = np.load(data_x_path, allow_pickle=True)
 
@@ -82,6 +87,10 @@ def load_data(dataset_name, cutdatadir, data_type='train', k=0):
     dictActivities = np.load(data_labels_path, allow_pickle=True).item()
 
     # return data_x[:, -300:], data_y, dictActivities
+
+    # x_train = x_train / (x_range + 1)  # 归一化处理  # TODO: 感觉没必要
+    data_x = data_x[:, -data_lenght:]  # 控制数据长度
+
     return data_x, data_y, dictActivities
 
 
@@ -102,7 +111,7 @@ def load_model(dict_config):
     else:
         print(
             'Your model name is:%s, but it does not exist. What are the names of the other models? Quickly specify the name of the model. Wow...' % (
-            dict_config['model_name']))
+                dict_config['model_name']))
         sys.exit(-1)
 
     return model
@@ -110,11 +119,12 @@ def load_model(dict_config):
 
 def train(dataset_name, k, cutdatadir, dict_config):
     data_type = 'train'
-    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
+    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k,
+                                                 data_lenght=dict_config["data_lenght"])
 
     data_type = 'test'
-    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
-
+    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k,
+                                               data_lenght=dict_config["data_lenght"])
 
     dict_config['no_activities'] = len(dictActivities)
     dict_config['vocabulary_size'] = len(train_x)  # TODO:这个服务于 embedding 的字典大小, 默认的都是 188, 现在需要看一下一共有多少种状态, 可以 set 一下.
@@ -142,36 +152,61 @@ def train(dataset_name, k, cutdatadir, dict_config):
     starttime = datetime.now().strftime('%Y%m%d-%H%M%S')
 
     # train the model
-    checkpointer_dir = os.path.join(cutdatadir, 'weight')  # 保存结果文件夹
+    # checkpointer_dir = os.path.join(cutdatadir, 'weight')  # 保存结果文件夹
+    #
+    # os.path.join(dict_config["datasets_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
+    checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
     general.create_folder(checkpointer_dir)
 
-    base_identifier = '%s_%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['nb_epochs'],
-        str(dict_config['distance_int']), k)
+    base_identifier = path2name.get_identifier_name(dict_config, str(k))
 
-    weight_name = os.path.join(checkpointer_dir, base_identifier + '-best.hdh5')
-    print('ModelCheckpoint 已经保存到 %s' % weight_name)
-    model_checkpoint = ModelCheckpoint(weight_name,
-                                       monitor='loss',
-                                       mode='min',
-                                       period=1,
-                                       save_best_only=True)
+    file_path = os.path.join(checkpointer_dir, "%s-{epoch:06d}-{loss:.6f}-{val_acc:.6f}.hdf5" % (base_identifier))
+    model_checkpoint = ModelCheckpoint_cus(filepath=file_path,
+                                           monitor='loss', verbose=1,
+                                           save_best_only=False,
+                                           save_best_only_period=True,
+                                           mode='min', period=100,  # int(self.nb_epochs/5)
+                                           )
+
     early_stop = EarlyStopping(monitor='acc', patience=dict_config['patience'], verbose=1, mode='auto')
 
     print('Begin training ...')
     history_LY = model.fit_generator(generator=training_generator,
                                      validation_data=validation_generator,
                                      epochs=dict_config['nb_epochs'],
-                                     verbose=dict_config['verbose'],
+                                     verbose=int(dict_config['verbose']),
                                      shuffle=dict_config['shuffle'],
                                      callbacks=[model_checkpoint, early_stop]
                                      )
-    weight_name_final_epochs = os.path.join(checkpointer_dir, base_identifier + '-final.hdh5')
-    model.save(weight_name_final_epochs)
 
-    log_file_path = os.path.join(cutdatadir, 'log')  # 日志文件保存路径
+    #### 保存 final_model 和 best_model
+    weight_name = os.path.join(checkpointer_dir, base_identifier + '-final.hdf5')
+    print('ModelCheckpoint 已经保存到 %s' % weight_name)
+
+    model.save(weight_name)
+    ### -----------  认为 最小loss 是最好的
+    min_loss = 128
+    best_model_name = ""
+    pattern = r'[Pbest_]?{}-(\d+)-(\d*\.\d*)-(\d*\.\d*).hdf5'.format(base_identifier)
+
+    prog = re.compile(pattern)
+    for hdf5_name in os.listdir(checkpointer_dir):
+        matchObj = prog.match(os.path.basename(hdf5_name))
+        if matchObj is not None:
+            c_epoch = matchObj.group(1)
+            c_loss = matchObj.group(2)
+            c_acc = matchObj.group(3)
+            if float(c_loss) < min_loss:
+                best_model_name = hdf5_name
+    shutil.copy(os.path.join(checkpointer_dir, os.path.basename(best_model_name)),
+                os.path.join(checkpointer_dir, base_identifier + "-best.hdf5"))
+    ### -----------  认为 最小loss 是最好的
+
+    # weight_name_final_epochs = os.path.join(checkpointer_dir, base_identifier + '-final.hdf5')
+    # model.save(weight_name_final_epochs)
+
+    log_file_path = os.path.join(checkpointer_dir, 'log')  # 日志文件保存路径
     general.create_folder(log_file_path)
 
     csvFileName = os.path.join(log_file_path, base_identifier + '.csv')
@@ -191,21 +226,22 @@ def train(dataset_name, k, cutdatadir, dict_config):
 # load from weight
 def validation_from_weight(dataset_name, weight_path, cutdatadir, k, dict_config, flag='best'):
     data_type = 'train'
-    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
+    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k,
+                                                 data_lenght=dict_config["data_lenght"])
 
     data_type = 'test'
-    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
+    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k,
+                                               data_lenght=dict_config["data_lenght"])
 
     dict_config['no_activities'] = len(dictActivities)
     dict_config['vocabulary_size'] = len(train_x)
     model = load_model(dict_config)
 
-    base_identifier = '%s_%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['nb_epochs'],
-        str(dict_config['distance_int']), k)
+    base_identifier = path2name.get_identifier_name(dict_config, str(k))
 
-    weight_name = os.path.join(weight_path, base_identifier + '-' + flag + '.hdh5')
+    checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
+
+    weight_name = os.path.join(checkpointer_dir, base_identifier + '-' + flag + '.hdf5')
 
     model.load_weights(weight_name)
     model = modelsLY.compileModelcus(model, dict_config['optimizer'])
@@ -255,21 +291,21 @@ def validation_from_weight(dataset_name, weight_path, cutdatadir, k, dict_config
 
 
 # Merge the two dictionaries, that is, the parameters required by the algorithm
-def Merge(dict_config, dict_config_cus):
-    return dict_config.update(dict_config_cus)
+# def Merge(dict_config, dict_config_cus):
+#     return dict_config.update(dict_config_cus)
 
 
 def train_val(dict_config_cus):
+    dict_config = general.Merge(METHOD_PARAMETER_TEMPLATE, dict_config_cus)
 
-    dict_config = Merge(METHOD_PARAMETER_TEMPLATE, dict_config_cus)
-
-    logger = MyLogger()
+    # logger = MyLogger()
 
     dataset_name = dict_config['dataset_name']
     print("current dataset: %s" % dataset_name)
-    datadir = os.path.join(dict_config["base_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
+    datadir = os.path.join(dict_config["datasets_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
 
-    if dict_config['want_cut_data'] == True:  # 基本上都是不重新切分的, 因此这句是没必要的.
+    want_cut_data = False
+    if want_cut_data == True:  # 基本上都是不重新切分的, 因此这句是没必要的.
         datacut(dataset_name, datadir, dict_config)
 
     cvaccuracy_best = []
@@ -309,32 +345,30 @@ def train_val(dict_config_cus):
     print('final: current database: {} \t {:.2f}% (+/- {:.2f}%)'.format(dataset_name, np.mean(cvaccuracy_final),
                                                                         np.std(cvaccuracy_final)))
 
-    base_identifier = '%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['nb_epochs'],
-        str(dict_config['distance_int']))
+    base_identifier = path2name.get_identifier_name(dict_config)
+    checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
-    csvfile_best = os.path.join(cutdatadir, 'weight', base_identifier + '_best.csv')
-    with open(csvfile_best, "w") as output:
+    csvfile_best = os.path.join(checkpointer_dir, 'log', base_identifier + '_best.csv')
+    with open(csvfile_best, "w", encoding="utf-8") as output:
         writer = csv.writer(output, lineterminator='\n')
         for val in cvscores_best:
             writer.writerow([",".join(str(el) for el in val)])
 
-    csvfile_final = os.path.join(cutdatadir, 'weight', base_identifier + '_final.csv')
-    with open(csvfile_final, "w") as output:
+    csvfile_final = os.path.join(checkpointer_dir, 'log', base_identifier + '_final.csv')
+    with open(csvfile_final, "w", encoding="utf-8") as output:
         writer = csv.writer(output, lineterminator='\n')
         for val in cvscores_final:
             writer.writerow([",".join(str(el) for el in val)])
 
-    evaluation_file_best = os.path.join(cutdatadir, 'weight', base_identifier + '_best.txt')
-    with open(evaluation_file_best, 'w') as fw:
+    evaluation_file_best = os.path.join(checkpointer_dir, 'log', base_identifier + '_best.txt')
+    with open(evaluation_file_best, 'w', encoding="utf-8") as fw:
         for i in total_dict_evaluation_best:
             for ii in total_dict_evaluation_best[i]:
                 fw.writelines(total_dict_evaluation_best[i][ii])
             fw.writelines('\n\n')
 
-    evaluation_file_final = os.path.join(cutdatadir, 'weight', base_identifier + '_final.txt')
-    with open(evaluation_file_final, 'w') as fw:
+    evaluation_file_final = os.path.join(checkpointer_dir, 'log', base_identifier + '_final.txt')
+    with open(evaluation_file_final, 'w', encoding="utf-8") as fw:
         for i in total_dict_evaluation_final:
             for ii in total_dict_evaluation_final[i]:
                 fw.writelines(total_dict_evaluation_final[i][ii])
@@ -342,11 +376,10 @@ def train_val(dict_config_cus):
 
 
 if __name__ == '__main__':
-    os.chdir('../')
-    print(os.getcwd())
+    from tools.configure.constants import WCNN_CONSTANT as MODEL_DEFAULT_CONF
 
-    from tools.configure.constants import EXTRA_CONSTANT, WCNN_CONSTANT as MODEL_DEFAULT_CONF, METHOD_PARAMETER_TEMPLATE, \
-    DATASETS_CONSTANT
+    # os.chdir('../')
+    print(os.getcwd())
 
     distance_int = 9999
     dataset_name = 'cairo'
@@ -354,11 +387,15 @@ if __name__ == '__main__':
 
     # 修订论文所需要的
     batch_size = 64
-    data_lenght = 300
+    data_lenght = 30
+
     kernel_number_base = 8
     kernel_wide_base = 1
 
     nb_epochs = 1000  # 公平起见, 默认都是 1000 吧.
+
+    MODEL_DEFAULT_CONF["kernel_number_base"] = kernel_number_base
+    MODEL_DEFAULT_CONF["kernel_wide_base"] = kernel_wide_base
 
     dict_config_cus = {
 
@@ -366,22 +403,16 @@ if __name__ == '__main__':
         "archive_name": DATASETS_CONSTANT["archive_name"],
         "ksplit": DATASETS_CONSTANT["ksplit"],
 
-        'model_name': MODEL_DEFAULT_CONF["model_name"],
-        'optimizer': MODEL_DEFAULT_CONF["optimizer"],
         'distance_int': distance_int,
         'dataset_name': dataset_name,
         'calculation_unit': calculation_unit,
 
         'data_lenght': data_lenght,
-        'kernel_number_base': kernel_number_base,
-        'kernel_wide_base': kernel_wide_base,
         'nb_epochs': nb_epochs,
-
         "batch_size": batch_size,
 
-        'identifier': EXTRA_CONSTANT["identifier"],
-        'purpose': EXTRA_CONSTANT["purpose"],
         # 'datasetsNames': ['cairo', 'milan', 'kyoto7', 'kyoto8', 'kyoto11'],
     }
-    train_val(dict_config_cus)
 
+    dict_config_cus = general.Merge(dict_config_cus, MODEL_DEFAULT_CONF)
+    train_val(dict_config_cus)
