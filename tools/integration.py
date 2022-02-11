@@ -375,6 +375,9 @@ def train_val(dict_config_cus):
                 fw.writelines(total_dict_evaluation_final[i][ii])
             fw.writelines('\n\n')
 
+    with open(os.path.join(checkpointer_dir, dict_config["complete_flag"]), "w", encoding="utf-8") as fw:
+        json.dump(dict_config, fw)
+
 
 if __name__ == '__main__':
     from tools.configure.constants import WCNN_CONSTANT as MODEL_DEFAULT_CONF

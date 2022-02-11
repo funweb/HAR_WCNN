@@ -51,7 +51,7 @@ WCNN_CONSTANT = {
     # "data_max_lenght": 2000,
     # "epochs": 2000,
     # "batchSize": 64,
-    "optimizer": "rms",
+    "optimizer": "adagrad",
     "kernel_number_base": "",
     "kernel_wide_base": ""
 }
