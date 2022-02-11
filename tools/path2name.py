@@ -19,12 +19,17 @@ def get_identifier_name(dict_config, other_parameter=""):
 
     return base_identifier
 
-def get_checkpointer_dir(dict_config):
-    checkpointer_dir = os.path.join(dict_config["datasets_dir"],
+def get_checkpointer_dir(dict_config, other_parameter=""):
+    base_dir = os.path.join(dict_config["datasets_dir"],
                                     dict_config["result_dir"],
                                     dict_config["model_name"],
                                     dict_config["dataset_name"],
                                     str(dict_config['distance_int']))
+
+    base_identifier = get_identifier_name(dict_config, other_parameter="")
+
+    checkpointer_dir = os.path.join(base_dir, base_identifier)
+
     return checkpointer_dir
 
 

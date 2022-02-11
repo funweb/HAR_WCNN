@@ -157,10 +157,8 @@ def train(dataset_name, k, cutdatadir, dict_config):
     # os.path.join(dict_config["datasets_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
     checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
-    weights_dir = os.path.join(checkpointer_dir, path2name.get_identifier_name(dict_config))
+    weights_dir = os.path.join(checkpointer_dir, "weights")
     general.create_folder(weights_dir)
-
-    # base_identifier = path2name.get_identifier_name(dict_config, str(k))
 
     weight_name = os.path.join(weights_dir, "%s-{epoch:06d}-{loss:.6f}-{val_acc:.6f}.hdf5" % (str(k)))
     model_checkpoint = ModelCheckpoint_cus(filepath=weight_name,
@@ -210,7 +208,7 @@ def train(dataset_name, k, cutdatadir, dict_config):
     log_file_path = os.path.join(checkpointer_dir, 'log')  # 日志文件保存路径
     general.create_folder(log_file_path)
 
-    csvFileName = os.path.join(log_file_path, str(k) + '.csv')
+    csvFileName = os.path.join(log_file_path, path2name.get_identifier_name(dict_config) + '.csv')
     pd.read_json(json.dumps(history_LY.history), encoding="utf-8", orient='records').to_csv(csvFileName)
     print('save in: %s' % (csvFileName))
 
@@ -240,7 +238,7 @@ def validation_from_weight(dataset_name, weight_path, cutdatadir, k, dict_config
 
     checkpointer_dir = path2name.get_checkpointer_dir(dict_config)
 
-    weights_dir = os.path.join(checkpointer_dir, path2name.get_identifier_name(dict_config))
+    weights_dir = os.path.join(checkpointer_dir, "weights")
 
     weight_name = os.path.join(weights_dir, str(k) + '-' + flag + '.hdf5')
 
@@ -318,6 +316,11 @@ def train_val(dict_config_cus):
 
     total_dict_evaluation_best = {}
     total_dict_evaluation_final = {}
+
+    old_result_dir = path2name.get_checkpointer_dir(dict_config)
+    print(old_result_dir)
+    if os.path.exists(old_result_dir):
+        shutil.rmtree(old_result_dir)
 
     for k in range(dict_config['ksplit']):
         cutdatadir = os.path.join(datadir, str(dict_config['ksplit']))  # 是否应该放到 for 循环外面呢?
