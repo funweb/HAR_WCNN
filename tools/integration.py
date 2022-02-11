@@ -20,22 +20,22 @@ import tensorflow as tf
 from classifierModels import modelsLY
 from tools import general
 from tools.DataGenerator import MyDataGenerator
-from tools.MyLogger import MyLogger
+from tools.MyLogger import MyLoger
 
 
-def get_dict_length(data_name, distant_int, P=False):
-    file_url = os.path.join(os.getcwd(), 'datasets', 'ende', data_name, str(distant_int), 'sensor2dict.npy')
+def get_dict_length(dataset_name, distant_int, P=False):
+    file_url = os.path.join(os.getcwd(), 'datasets', 'ende', dataset_name, str(distant_int), 'sensor2dict.npy')
     data_content = np.load(file_url, allow_pickle=True)
     if P:
         print('operater dataset and the length dict is %s: %d' % (
-            data_name + '_' + str(distant_int), len(data_content.item())))
+            dataset_name + '_' + str(distant_int), len(data_content.item())))
     # sys.exit(-1)
     return len(data_content.item())
 
 
-def datacut(data_name, datadir, dict_config):
+def datacut(dataset_name, datadir, dict_config):
     ksplit = dict_config['ksplit']
-    opdir = os.path.join(os.getcwd(), 'datasets', 'ende', data_name, str(dict_config['distance_int']), 'npy',
+    opdir = os.path.join(os.getcwd(), 'datasets', 'ende', dataset_name, str(dict_config['distance_int']), 'npy',
                          str(ksplit))
 
     if not os.path.exists(opdir):
@@ -44,41 +44,41 @@ def datacut(data_name, datadir, dict_config):
         os.makedirs(opdir)
 
     # load data
-    data_path_x = os.path.join(datadir, data_name + '-x.npy')
+    data_path_x = os.path.join(datadir, dataset_name + '-x.npy')
     datas_x = np.load(data_path_x, allow_pickle=True)
 
-    data_path_y = os.path.join(datadir, data_name + '-y.npy')
+    data_path_y = os.path.join(datadir, dataset_name + '-y.npy')
     datas_y = np.load(data_path_y, allow_pickle=True)
     datas_y = np.array(datas_y, dtype=np.int32)
 
-    data_path_labels = os.path.join(datadir, data_name + '-labels.npy')
+    data_path_labels = os.path.join(datadir, dataset_name + '-labels.npy')
     datas_labels = np.load(data_path_labels, allow_pickle=True)
 
     kfold = StratifiedKFold(n_splits=3, shuffle=True, random_state=7)
     k = 0
     for train, test in kfold.split(datas_x, datas_y):
-        np.save(os.path.join(opdir, data_name + '-train-x-' + str(k) + '.npy'), datas_x[train])
-        np.save(os.path.join(opdir, data_name + '-train-y-' + str(k) + '.npy'), datas_y[train])
+        np.save(os.path.join(opdir, dataset_name + '-train-x-' + str(k) + '.npy'), datas_x[train])
+        np.save(os.path.join(opdir, dataset_name + '-train-y-' + str(k) + '.npy'), datas_y[train])
 
-        np.save(os.path.join(opdir, data_name + '-test-x-' + str(k) + '.npy'), datas_x[test])
-        np.save(os.path.join(opdir, data_name + '-test-y-' + str(k) + '.npy'), datas_y[test])
+        np.save(os.path.join(opdir, dataset_name + '-test-x-' + str(k) + '.npy'), datas_x[test])
+        np.save(os.path.join(opdir, dataset_name + '-test-y-' + str(k) + '.npy'), datas_y[test])
 
         if k == 0:
-            np.save(os.path.join(opdir, data_name + '-labels.npy'), datas_labels)
+            np.save(os.path.join(opdir, dataset_name + '-labels.npy'), datas_labels)
 
         k += 1
 
 
 # Load data in the following format:
-# cutdatadir + '\\' + data_name + '-test-y-' + str(k) + '.npy', datas_y[test]
-def load_data(data_name, cutdatadir, data_type='train', k=0):
-    data_x_path = os.path.join(cutdatadir, data_name + '-' + data_type + '-x-' + str(k) + '.npy')
+# cutdatadir + '\\' + dataset_name + '-test-y-' + str(k) + '.npy', datas_y[test]
+def load_data(dataset_name, cutdatadir, data_type='train', k=0):
+    data_x_path = os.path.join(cutdatadir, dataset_name + '-' + data_type + '-x-' + str(k) + '.npy')
     data_x = np.load(data_x_path, allow_pickle=True)
 
-    data_y_path = os.path.join(cutdatadir, data_name + '-' + data_type + '-y-' + str(k) + '.npy')
+    data_y_path = os.path.join(cutdatadir, dataset_name + '-' + data_type + '-y-' + str(k) + '.npy')
     data_y = np.load(data_y_path, allow_pickle=True)
 
-    data_labels_path = os.path.join(cutdatadir, data_name + '-labels.npy')
+    data_labels_path = os.path.join(cutdatadir, dataset_name + '-labels.npy')
     dictActivities = np.load(data_labels_path, allow_pickle=True).item()
 
     # return data_x[:, -300:], data_y, dictActivities
@@ -87,10 +87,18 @@ def load_data(data_name, cutdatadir, data_type='train', k=0):
 
 def load_model(dict_config):
     if dict_config['model_name'] == 'LSTM':
-        model = modelsLY.get_LSTM(dict_config['input_dim'], dict_config['units'], dict_config['data_max_lenght'],
-                                dict_config['no_activities'])
+        model = modelsLY.get_LSTM(vocabulary_size=dict_config['vocabulary_size'],
+                                  output_dim=dict_config['units'],
+                                  data_lenght=dict_config['data_lenght'],
+                                  no_activities=dict_config['no_activities'])
+
     elif dict_config['model_name'] == 'WCNN':
-        model = modelsLY.WCNN(dict_config['no_activities'])
+        model = modelsLY.WCNN(dict_config['no_activities'],
+                              vocabulary_size=dict_config['vocabulary_size'],
+                              output_dim=dict_config['units'],
+                              data_lenght=dict_config['data_lenght'],
+                              kernel_number_base=dict_config['kernel_number_base'],
+                              kernel_wide_base=dict_config['kernel_wide_base'])
     else:
         print(
             'Your model name is:%s, but it does not exist. What are the names of the other models? Quickly specify the name of the model. Wow...' % (
@@ -100,23 +108,31 @@ def load_model(dict_config):
     return model
 
 
-def train(data_name, k, cutdatadir, dict_config):
+def train(dataset_name, k, cutdatadir, dict_config):
     data_type = 'train'
-    train_x, train_y, dictActivities = load_data(data_name, cutdatadir, data_type=data_type, k=k)
+    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
 
     data_type = 'test'
-    test_x, test_y, dictActivities = load_data(data_name, cutdatadir, data_type=data_type, k=k)
+    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
 
-    training_generator = MyDataGenerator(train_x, train_y, dict_config['batch_size'], dict_config['dim'],
+
+    dict_config['no_activities'] = len(dictActivities)
+    dict_config['vocabulary_size'] = len(train_x)  # TODO:这个服务于 embedding 的字典大小, 默认的都是 188, 现在需要看一下一共有多少种状态, 可以 set 一下.
+
+    dict_config['n_channels'] = 0  # 默认是 0
+    dict_config['is_to_categorical'] = False
+    dict_config['n_classes'] = dict_config['no_activities']
+    dict_config['shuffle'] = True
+    dict_config['is_embedding'] = True  # 决定了要不要扩充维度
+
+    training_generator = MyDataGenerator(train_x, train_y, dict_config['batch_size'], dict_config['data_lenght'],
                                          dict_config['n_channels'], dict_config['is_to_categorical'],
                                          dict_config['n_classes'], dict_config['shuffle'], dict_config['is_embedding'])
-    validation_generator = MyDataGenerator(test_x, test_y, dict_config['batch_size'], dict_config['dim'],
+    validation_generator = MyDataGenerator(test_x, test_y, dict_config['batch_size'], dict_config['data_lenght'],
                                            dict_config['n_channels'], dict_config['is_to_categorical'],
                                            dict_config['n_classes'], dict_config['shuffle'],
                                            dict_config['is_embedding'])
 
-    dict_config['no_activities'] = len(dictActivities)
-    dict_config['input_dim'] = len(train_x)
     model = load_model(dict_config)
 
     if k is 0:
@@ -126,13 +142,13 @@ def train(data_name, k, cutdatadir, dict_config):
     starttime = datetime.now().strftime('%Y%m%d-%H%M%S')
 
     # train the model
-    checkpointer_dir = os.path.join(cutdatadir, 'weight')
+    checkpointer_dir = os.path.join(cutdatadir, 'weight')  # 保存结果文件夹
 
     general.create_folder(checkpointer_dir)
 
     base_identifier = '%s_%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], data_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['epochs'],
+        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
+        dict_config['nb_epochs'],
         str(dict_config['distance_int']), k)
 
     weight_name = os.path.join(checkpointer_dir, base_identifier + '-best.hdh5')
@@ -147,15 +163,15 @@ def train(data_name, k, cutdatadir, dict_config):
     print('Begin training ...')
     history_LY = model.fit_generator(generator=training_generator,
                                      validation_data=validation_generator,
-                                     epochs=dict_config['epochs'],
+                                     epochs=dict_config['nb_epochs'],
                                      verbose=dict_config['verbose'],
                                      shuffle=dict_config['shuffle'],
                                      callbacks=[model_checkpoint, early_stop]
                                      )
     weight_name_final_epochs = os.path.join(checkpointer_dir, base_identifier + '-final.hdh5')
     model.save(weight_name_final_epochs)
-    log_file_path = os.path.join(cutdatadir, 'log')
 
+    log_file_path = os.path.join(cutdatadir, 'log')  # 日志文件保存路径
     general.create_folder(log_file_path)
 
     csvFileName = os.path.join(log_file_path, base_identifier + '.csv')
@@ -168,25 +184,25 @@ def train(data_name, k, cutdatadir, dict_config):
                                                                                           '%Y%m%d-%H%M%S')).total_seconds())
     print('average %f s' % ((datetime.strptime(endtime, '%Y%m%d-%H%M%S') - datetime.strptime(starttime,
                                                                                              '%Y%m%d-%H%M%S')).total_seconds() /
-                            dict_config['epochs']))
+                            dict_config['nb_epochs']))
     print('%d epoch finished' % k)
 
 
 # load from weight
-def validation_from_weight(data_name, weight_path, cutdatadir, k, dict_config, flag='best'):
+def validation_from_weight(dataset_name, weight_path, cutdatadir, k, dict_config, flag='best'):
     data_type = 'train'
-    train_x, train_y, dictActivities = load_data(data_name, cutdatadir, data_type=data_type, k=k)
+    train_x, train_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
 
     data_type = 'test'
-    test_x, test_y, dictActivities = load_data(data_name, cutdatadir, data_type=data_type, k=k)
+    test_x, test_y, dictActivities = load_data(dataset_name, cutdatadir, data_type=data_type, k=k)
 
     dict_config['no_activities'] = len(dictActivities)
-    dict_config['input_dim'] = len(train_x)
+    dict_config['vocabulary_size'] = len(train_x)
     model = load_model(dict_config)
 
     base_identifier = '%s_%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], data_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['epochs'],
+        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
+        dict_config['nb_epochs'],
         str(dict_config['distance_int']), k)
 
     weight_name = os.path.join(weight_path, base_identifier + '-' + flag + '.hdh5')
@@ -198,7 +214,7 @@ def validation_from_weight(data_name, weight_path, cutdatadir, k, dict_config, f
     print('Begin testing ...')
     scores = model.evaluate(test_x, test_y, batch_size=dict_config['batch_size'], verbose=1)
 
-    print('%d-%s:\t%s: %.2f%%' % (k, data_name, model.metrics_names[1], scores[1] * 100))
+    print('%d-%s:\t%s: %.2f%%' % (k, dataset_name, model.metrics_names[1], scores[1] * 100))
 
     print('Report:')
     target_names = sorted(dictActivities, key=dictActivities.get)
@@ -243,75 +259,41 @@ def Merge(dict_config, dict_config_cus):
     return dict_config.update(dict_config_cus)
 
 
-def train_val(dict_config_cus, opts):
-    dict_config = {
-        'model_name': '',
-        'optimizer': '',
-        'distance_int': '',
-        'data_name': '',
-        'calculation_unit': '0',
+def train_val(dict_config_cus):
 
-        'seed': 7,
-        'want_cut_data': 'False',
-        'ksplit': 3,
-
-        'dim': (2000),
-        'is_embedding': True,
-        'batch_size': 64,
-        'n_classes': 6,
-        'n_channels': 0,
-        'is_to_categorical': False,
-        'shuffle': True,
-
-        'input_dim': '',
-        'units': 64,
-        'data_max_lenght': 2000,
-        'no_activities': '',
-
-        'epochs': 2,
-        'patience': 200,
-        'fit_shuffle': False,
-        'verbose': 1,
-
-        # flag
-        'identifier': '2021',
-        'purpose': 'None',
-        'datasetsNames': ['cairo', 'milan', 'kyoto7', 'kyoto8', 'kyoto11'],
-    }
-
-    Merge(dict_config, dict_config_cus)
+    dict_config = Merge(METHOD_PARAMETER_TEMPLATE, dict_config_cus)
 
     logger = MyLogger()
 
-    data_name = dict_config['data_name']
-    print("current dataset: %s" % data_name)
-    datadir = os.path.join(opts["datasets"]["base_dir"], 'ende', data_name, str(dict_config['distance_int']), 'npy')
+    dataset_name = dict_config['dataset_name']
+    print("current dataset: %s" % dataset_name)
+    datadir = os.path.join(dict_config["base_dir"], 'ende', dataset_name, str(dict_config['distance_int']), 'npy')
 
-    if dict_config['want_cut_data'] == True:
-        datacut(data_name, datadir, dict_config)
+    if dict_config['want_cut_data'] == True:  # 基本上都是不重新切分的, 因此这句是没必要的.
+        datacut(dataset_name, datadir, dict_config)
 
     cvaccuracy_best = []
     cvaccuracy_final = []
     cvscores_best = []
     cvscores_final = []
 
-    modelname = dict_config['model_name']
+    # modelname = dict_config['model_name']
 
     total_dict_evaluation_best = {}
     total_dict_evaluation_final = {}
 
     for k in range(dict_config['ksplit']):
-        cutdatadir = os.path.join(datadir, str(dict_config['ksplit']))
+        cutdatadir = os.path.join(datadir, str(dict_config['ksplit']))  # 是否应该放到 for 循环外面呢?
 
-        train(data_name, k, cutdatadir, dict_config)
+        train(dataset_name, k, cutdatadir, dict_config)
 
         weight_path = os.path.join(datadir, str(dict_config['ksplit']), 'weight')
         print('-' * 20, '  best  ', '-' * 20)
-        dict_evaluation_best, scores_best = validation_from_weight(data_name, weight_path, cutdatadir, k,
+        dict_evaluation_best, scores_best = validation_from_weight(dataset_name, weight_path, cutdatadir, k,
                                                                    dict_config, flag='best')
 
         print('-' * 20, '  final  ', '-' * 20)
-        dict_evaluation_final, scores_final = validation_from_weight(data_name, weight_path, cutdatadir, k,
+        dict_evaluation_final, scores_final = validation_from_weight(dataset_name, weight_path, cutdatadir, k,
                                                                      dict_config, flag='final')
 
         cvaccuracy_best.append(scores_best[1] * 100)
@@ -322,14 +304,14 @@ def train_val(dict_config_cus, opts):
         cvscores_final.append(scores_final)
         total_dict_evaluation_final.update({str(k): dict_evaluation_final})
 
-    print('best: current database: {} \t {:.2f}% (+/- {:.2f}%)'.format(data_name, np.mean(cvaccuracy_best),
+    print('best: current database: {} \t {:.2f}% (+/- {:.2f}%)'.format(dataset_name, np.mean(cvaccuracy_best),
                                                                        np.std(cvaccuracy_best)))
-    print('final: current database: {} \t {:.2f}% (+/- {:.2f}%)'.format(data_name, np.mean(cvaccuracy_final),
+    print('final: current database: {} \t {:.2f}% (+/- {:.2f}%)'.format(dataset_name, np.mean(cvaccuracy_final),
                                                                         np.std(cvaccuracy_final)))
 
     base_identifier = '%s_%s_%s_%s_%s_%s' % (
-        dict_config['identifier'], data_name, dict_config['model_name'], dict_config['optimizer'],
-        dict_config['epochs'],
+        dict_config['identifier'], dataset_name, dict_config['model_name'], dict_config['optimizer'],
+        dict_config['nb_epochs'],
         str(dict_config['distance_int']))
 
     csvfile_best = os.path.join(cutdatadir, 'weight', base_identifier + '_best.csv')
@@ -362,20 +344,44 @@ def train_val(dict_config_cus, opts):
 if __name__ == '__main__':
     os.chdir('../')
     print(os.getcwd())
-    opts = general.load_config()
+
+    from tools.configure.constants import EXTRA_CONSTANT, WCNN_CONSTANT as MODEL_DEFAULT_CONF, METHOD_PARAMETER_TEMPLATE, \
+    DATASETS_CONSTANT
+
+    distance_int = 9999
+    dataset_name = 'cairo'
+    calculation_unit = "0"
+
+    # 修订论文所需要的
+    batch_size = 64
+    data_lenght = 300
+    kernel_number_base = 8
+    kernel_wide_base = 1
+
+    nb_epochs = 1000  # 公平起见, 默认都是 1000 吧.
 
     dict_config_cus = {
 
-        'model_name': 'LSTM',
-        'optimizer': 'rms',
-        'distance_int': '3',
-        'data_name': 'kyoto7',
-        'calculation_unit': '0',
+        "datasets_dir": DATASETS_CONSTANT["base_dir"],  # 这是公共数据集常量
+        "archive_name": DATASETS_CONSTANT["archive_name"],
+        "ksplit": DATASETS_CONSTANT["ksplit"],
 
-        'epochs': 20,
+        'model_name': MODEL_DEFAULT_CONF["model_name"],
+        'optimizer': MODEL_DEFAULT_CONF["optimizer"],
+        'distance_int': distance_int,
+        'dataset_name': dataset_name,
+        'calculation_unit': calculation_unit,
 
-        'identifier': '2021',
-        'purpose': 'None',
+        'data_lenght': data_lenght,
+        'kernel_number_base': kernel_number_base,
+        'kernel_wide_base': kernel_wide_base,
+        'nb_epochs': nb_epochs,
+
+        "batch_size": batch_size,
+
+        'identifier': EXTRA_CONSTANT["identifier"],
+        'purpose': EXTRA_CONSTANT["purpose"],
         # 'datasetsNames': ['cairo', 'milan', 'kyoto7', 'kyoto8', 'kyoto11'],
     }
-    train_val(dict_config_cus, opts)
+    train_val(dict_config_cus)
+

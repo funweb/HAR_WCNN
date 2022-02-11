@@ -12,6 +12,9 @@ if __name__ == '__main__':
     data_name = 'kyoto7'
     calculation_unit = "0"
 
+    # 修订论文新增加的参数
+    data_max_lenght = 300  # 数据长度, 需要探索
+
     dict_config_cus = {
 
         'model_name': opts[method]["model_name"],

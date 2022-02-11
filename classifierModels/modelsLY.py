@@ -17,44 +17,43 @@ from keras.models import Model
 
 # input_dim: int > 0。
 # output_dim: int >= 0。
-def get_LSTM(input_dim, output_dim, max_lenght, no_activities):
+def get_LSTM(vocabulary_size, output_dim, data_lenght, no_activities):
     model = Sequential(name='LSTM')
-    model.add(Embedding(input_dim, output_dim, input_length=max_lenght, mask_zero=True))  # output_dim * input_dim
+    model.add(Embedding(vocabulary_size, output_dim, input_length=data_lenght, mask_zero=True))  # output_dim * input_dim
     model.add(LSTM(output_dim))  # (output_dim + input_dim + 1) * （output_dim * 4）
 
     model.add(Dense(no_activities, activation='softmax'))  # (input_dim * no_activities + no_activites)
     return model
 
 
-def WCNN(no_activities):
-    multiply = 8
+def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1):
     print('no_activities: %d\n' % (no_activities))
-    ip = Input(shape=(2000,))
-    emb = Embedding(188,
-                    64,
+    ip = Input(shape=(data_lenght,))
+    emb = Embedding(vocabulary_size,
+                    output_dim,
                     # weights=[embedding_matrix],
-                    input_length=2000,
+                    input_length=data_lenght,
                     trainable=True)(ip)
 
     emb = BatchNormalization()(emb)
 
     ly_he_uniform_1 = he_uniform(1)
-    cnn1 = Conv1D(4*multiply, 1, padding='same', kernel_initializer=ly_he_uniform_1)(emb)
+    cnn1 = Conv1D(4*kernel_number_base, 1*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_1)(emb)
 
     cnn1 = Activation('relu')(cnn1)
 
 
     ly_he_uniform_2 = he_uniform(2)
-    cnn2 = Conv1D(4*multiply, 3, padding='same', kernel_initializer=ly_he_uniform_2)(emb)
+    cnn2 = Conv1D(4*kernel_number_base, 3*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_2)(emb)
     cnn2 = Activation('relu')(cnn2)
 
 
     ly_he_uniform_3 = he_uniform(3)
-    cnn3 = Conv1D(2*multiply, 5, padding='same', kernel_initializer=ly_he_uniform_3)(emb)
+    cnn3 = Conv1D(2*kernel_number_base, 5*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_3)(emb)
     cnn3 = Activation('relu')(cnn3)
 
     ly_he_uniform_4 = he_uniform(4)
-    cnn4 = Conv1D(1 * multiply, 7, padding='same', kernel_initializer=ly_he_uniform_4)(emb)
+    cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(emb)
     cnn4 = Activation('relu')(cnn4)
 
     cnn = concatenate([cnn1, cnn2, cnn3, cnn4])
@@ -62,12 +61,12 @@ def WCNN(no_activities):
     cnn = GlobalMaxPooling1D()(cnn)
     cnn = BatchNormalization(axis=1)(cnn)
 
-    dcnn1 = Dense(4*multiply)(cnn)
+    dcnn1 = Dense(4*kernel_number_base)(cnn)
     dcnn1 = Activation('relu')(dcnn1)
     dcnn1 = Dropout(0.4)(dcnn1)
 
 
-    dcnn2 = Dense(4*multiply)(dcnn1)
+    dcnn2 = Dense(4*kernel_number_base)(dcnn1)
     dcnn2 = Activation('relu')(dcnn2)
 
 

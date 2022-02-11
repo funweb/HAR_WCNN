@@ -46,7 +46,7 @@ WCNN:
   data_max_lenght:
     2000
   epochs:
-    2000
+    1000
   batchSize:
     64
   model_name:
@@ -69,7 +69,7 @@ LSTM:
   data_max_lenght:
     2000
   epochs:
-    200
+    1000
   batchSize:
     64
   model_name:
