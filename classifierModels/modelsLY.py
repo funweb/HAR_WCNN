@@ -56,6 +56,8 @@ def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, ke
     cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(emb)
     cnn4 = Activation('relu')(cnn4)
 
+    # max_pool_1 = MaxPool1D(pool_size=3, strides=3, padding='same')(emb)  # 不知道这个有用没
+
     cnn = concatenate([cnn1, cnn2, cnn3, cnn4])
 
     cnn = GlobalMaxPooling1D()(cnn)
