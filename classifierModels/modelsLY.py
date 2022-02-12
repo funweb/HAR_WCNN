@@ -116,7 +116,7 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
 
     cnn = concatenate([cnn1, cnn2, cnn3, cnn4])
 
-    # cnn = GlobalMaxPooling1D()(cnn)
+    cnn = GlobalMaxPooling1D()(cnn)
     # cnn = BatchNormalization(axis=1)(cnn)
 
     dcnn1 = Dense(4*kernel_number_base)(cnn)

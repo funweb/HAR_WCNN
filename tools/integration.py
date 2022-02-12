@@ -391,7 +391,8 @@ def train_val(dict_config_cus):
 
 
 if __name__ == '__main__':
-    from tools.configure.constants import WCNN_CONSTANT as MODEL_DEFAULT_CONF
+
+    from tools.configure.constants import WCNNR_CONSTANT as MODEL_DEFAULT_CONF
 
     # os.chdir('../')
     print(os.getcwd())

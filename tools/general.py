@@ -1,4 +1,5 @@
 import copy
+import sys
 
 import keras
 import numpy as np
@@ -263,7 +264,26 @@ class ModelCheckpoint_cus(Callback):
                     self.model.save(filepath, overwrite=True)
 
 
+def fix_sys_path(root_path):
+    root_path_a = os.path.abspath(root_path)
+
+    p_root_path_a = os.path.join(root_path_a, "..")
+
+    for p in os.listdir(p_root_path_a):
+        p_path_a = os.path.abspath(os.path.join(p_root_path_a, p))
+        if p_path_a != root_path_a:
+            try:
+                sys.path.remove(root_path_a)
+                print("remove: {}".format(p_path_a))
+            except ValueError:
+                pass  # path might not have been added to sys.path
+
+
+
 if __name__ == '__main__':
     # print(load_config("configure/config.yaml"))
     print(colorstr("bold", "bright_red", 222))
     print(colorstr("bright_red", 222))
+
+    fix_sys_path("..")
+    pass
