@@ -78,7 +78,6 @@ def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, ke
     return model
 
 
-
 def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1):
     print('no_activities: %d\n' % (no_activities))
     ip = Input(shape=(data_lenght,))
@@ -90,36 +89,23 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
 
     # emb = BatchNormalization()(emb)
 
-    ly_he_uniform_1 = he_uniform(1)
-    cnn1 = Conv1D(4*kernel_number_base, 1*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_1)(emb)
-    # cnn1 = Conv1D(4*kernel_number_base, 1*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_1)(cnn1)
-    # cnn1 = Activation('relu')(cnn1)
+    cnn_total = emb
+
+    for i in range(3):
+        # 网络的宽度
+        wide_kernal = []
+        for i in range(kernel_wide_base):
+            cnn = Conv1D(filters=kernel_number_base, kernel_size=(i + 1) * 2 - 1, padding='same',
+                         kernel_initializer=he_uniform(i))(cnn_total)
+            wide_kernal.append(cnn)
+
+        cnn_total = concatenate(wide_kernal)  # 好像默认: , axis=-1
 
 
-    ly_he_uniform_2 = he_uniform(2)
-    cnn2 = Conv1D(4*kernel_number_base, 3*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_2)(emb)
-    # cnn2 = Conv1D(4*kernel_number_base, 3*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_2)(cnn2)
-    # cnn2 = Activation('relu')(cnn2)
-
-
-    ly_he_uniform_3 = he_uniform(3)
-    cnn3 = Conv1D(2*kernel_number_base, 5*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_3)(emb)
-    # cnn3 = Conv1D(2*kernel_number_base, 5*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_3)(cnn3)
-    # cnn3 = Activation('relu')(cnn3)
-
-    ly_he_uniform_4 = he_uniform(4)
-    cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(emb)
-    # cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(cnn4)
-    # cnn4 = Activation('relu')(cnn4)
-
-    # max_pool_1 = MaxPool1D(pool_size=3, strides=3, padding='same')(emb)  # 不知道这个有用没
-
-    cnn = concatenate([cnn1, cnn2, cnn3, cnn4])  # 好像默认: , axis=-1
-
-    cnn = GlobalMaxPooling1D()(cnn)
+    cnn_total = GlobalMaxPooling1D()(cnn_total)
     # cnn = BatchNormalization(axis=1)(cnn)
 
-    dcnn1 = Dense(4*kernel_number_base)(cnn)
+    dcnn1 = Dense(4*kernel_number_base)(cnn_total)
     dcnn1 = Activation('relu')(dcnn1)
     dcnn1 = Dropout(0.4)(dcnn1)
 
@@ -173,7 +159,7 @@ def compileModelcus(model, optimizer_name_flag):
 
 
 
-
+import keras.applications.inception_v3
 
 
 ### ---------------------- new ------------------------------
@@ -327,7 +313,7 @@ def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, ke
 
 if __name__ == '__main__':
     from keras.utils.vis_utils import plot_model
-    model = inception_model(no_activities=7)
+    model = WCNNR(no_activities=7, kernel_wide_base=6)
     plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
     print("success")
     pass
