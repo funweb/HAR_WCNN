@@ -108,6 +108,14 @@ def load_model(dict_config):
                               data_lenght=dict_config['data_lenght'],
                               kernel_number_base=dict_config['kernel_number_base'],
                               kernel_wide_base=dict_config['kernel_wide_base'])
+    elif dict_config["model_name"] == "WCNNR":
+        model = modelsLY.WCNNR(dict_config['no_activities'],
+                              vocabulary_size=dict_config['vocabulary_size'],
+                              output_dim=dict_config['units'],
+                              data_lenght=dict_config['data_lenght'],
+                              kernel_number_base=dict_config['kernel_number_base'],
+                              kernel_wide_base=dict_config['kernel_wide_base'])
+
     else:
         print(
             'Your model name is:%s, but it does not exist. What are the names of the other models? Quickly specify the name of the model. Wow...' % (
