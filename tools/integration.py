@@ -114,13 +114,13 @@ def load_model(dict_config):
                               output_dim=dict_config['units'],
                               data_lenght=dict_config['data_lenght'],
                               kernel_number_base=dict_config['kernel_number_base'],
-                              kernel_wide_base=dict_config['kernel_wide_base'])
+                              kernel_wide_base=dict_config['kernel_wide_base'],
+                               net_deep_base=dict_config['net_deep_base'])
     elif dict_config["model_name"] == "inception_model":
         model = modelsLY.inception_model(no_activities=dict_config['no_activities'],
                                          data_lenght=dict_config['data_lenght'],
                                          kernel_number_base=dict_config['kernel_number_base'],
-                                         kernel_wide_base=dict_config['kernel_wide_base'],
-                                         net_deep_base=dict_config['net_deep_base']
+                                         kernel_wide_base=dict_config['kernel_wide_base']
                                          )
 
     else:
