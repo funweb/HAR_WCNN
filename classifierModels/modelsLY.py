@@ -7,7 +7,7 @@ from keras.initializers import he_uniform
 
 from keras import regularizers
 
-
+from keras.applications import inception_v3
 
 from keras.layers import Input, Dense, Dropout, BatchNormalization, Conv1D, MaxPool1D, GlobalAveragePooling1D, \
     concatenate, Activation
@@ -78,6 +78,63 @@ def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, ke
     return model
 
 
+
+def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1):
+    print('no_activities: %d\n' % (no_activities))
+    ip = Input(shape=(data_lenght,))
+    emb = Embedding(vocabulary_size,
+                    output_dim,
+                    # weights=[embedding_matrix],
+                    input_length=data_lenght,
+                    trainable=True)(ip)
+
+    # emb = BatchNormalization()(emb)
+
+    ly_he_uniform_1 = he_uniform(1)
+    cnn1 = Conv1D(4*kernel_number_base, 1*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_1)(emb)
+    # cnn1 = Conv1D(4*kernel_number_base, 1*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_1)(cnn1)
+    # cnn1 = Activation('relu')(cnn1)
+
+
+    ly_he_uniform_2 = he_uniform(2)
+    cnn2 = Conv1D(4*kernel_number_base, 3*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_2)(emb)
+    # cnn2 = Conv1D(4*kernel_number_base, 3*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_2)(cnn2)
+    # cnn2 = Activation('relu')(cnn2)
+
+
+    ly_he_uniform_3 = he_uniform(3)
+    cnn3 = Conv1D(2*kernel_number_base, 5*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_3)(emb)
+    # cnn3 = Conv1D(2*kernel_number_base, 5*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_3)(cnn3)
+    # cnn3 = Activation('relu')(cnn3)
+
+    ly_he_uniform_4 = he_uniform(4)
+    cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(emb)
+    # cnn4 = Conv1D(1 * kernel_number_base, 7*kernel_wide_base, padding='same', kernel_initializer=ly_he_uniform_4)(cnn4)
+    # cnn4 = Activation('relu')(cnn4)
+
+    # max_pool_1 = MaxPool1D(pool_size=3, strides=3, padding='same')(emb)  # 不知道这个有用没
+
+    cnn = concatenate([cnn1, cnn2, cnn3, cnn4])
+
+    # cnn = GlobalMaxPooling1D()(cnn)
+    # cnn = BatchNormalization(axis=1)(cnn)
+
+    dcnn1 = Dense(4*kernel_number_base)(cnn)
+    dcnn1 = Activation('relu')(dcnn1)
+    dcnn1 = Dropout(0.4)(dcnn1)
+
+
+    dcnn2 = Dense(4*kernel_number_base)(dcnn1)
+    dcnn2 = Activation('relu')(dcnn2)
+
+
+    out = Dense(no_activities, activation='softmax')(dcnn2)
+    model = Model(ip, out)
+
+    return model
+
+
+
 # 自定义优化器
 from keras import optimizers
 
@@ -112,3 +169,11 @@ def compileModelcus(model, optimizer_name_flag):
     model.compile(loss='sparse_categorical_crossentropy', optimizer=optimizer_name, metrics=['accuracy'])  # 论文中用的 adam
     # model.summary()
     return model
+
+
+
+if __name__ == '__main__':
+    from keras.utils.vis_utils import plot_model
+    model = WCNNR(no_activities=7)
+    plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
+    pass

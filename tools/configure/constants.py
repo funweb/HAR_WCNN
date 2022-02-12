@@ -56,6 +56,19 @@ WCNN_CONSTANT = {
     "kernel_wide_base": ""
 }
 
+WCNNR_CONSTANT = {
+    "model_name": "WCNN",
+    # "patience": 200,  # 提前停止
+    "input_dim": 128,  # 按理说这个应该是设置为数据类型的大小的
+    "units": 64,  # deep 论文中的，这个小的可以尝试一下。。
+    # "data_max_lenght": 2000,
+    # "epochs": 2000,
+    # "batchSize": 64,
+    "optimizer": "adagrad",
+    "kernel_number_base": "",
+    "kernel_wide_base": ""
+}
+
 LSTM_CONSTANT = {
     "model_name": "LSTM",
     # "patience": 200,  # 提前停止
