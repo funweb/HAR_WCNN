@@ -99,7 +99,10 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
                          kernel_initializer=he_uniform(i))(cnn_total)  # 要不要加入激活层, 有待商榷
             wide_kernal.append(cnn)
 
-        cnn_total = concatenate(wide_kernal)  # 好像默认: , axis=-1
+        if len(wide_kernal) > 1:
+            cnn_total = concatenate(wide_kernal)  # 好像默认: , axis=-1
+        else:
+            cnn_total = wide_kernal[0]
 
 
     cnn_total = GlobalMaxPooling1D()(cnn_total)
@@ -313,7 +316,7 @@ def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, ke
 
 if __name__ == '__main__':
     from keras.utils.vis_utils import plot_model
-    model = WCNNR(no_activities=7, kernel_wide_base=6)
+    model = WCNNR(no_activities=7, kernel_wide_base=4)
     plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
     print("success")
     pass
