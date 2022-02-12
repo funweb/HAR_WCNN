@@ -114,7 +114,7 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
 
     # max_pool_1 = MaxPool1D(pool_size=3, strides=3, padding='same')(emb)  # 不知道这个有用没
 
-    cnn = concatenate([cnn1, cnn2, cnn3, cnn4])
+    cnn = concatenate([cnn1, cnn2, cnn3, cnn4])  # 好像默认: , axis=-1
 
     cnn = GlobalMaxPooling1D()(cnn)
     # cnn = BatchNormalization(axis=1)(cnn)
@@ -172,8 +172,157 @@ def compileModelcus(model, optimizer_name_flag):
 
 
 
+
+
+
+
+### ---------------------- new ------------------------------
+from keras.layers import Conv1D, Multiply, MaxPool1D, RepeatVector, \
+    Reshape, Activation, MaxPool1D, GlobalAveragePooling1D, \
+    MaxPool2D, Concatenate, Add, Flatten, Conv2D, Input, Dense, \
+    Dropout, Activation, BatchNormalization
+import keras.backend as K
+
+
+def inception_block(inputs, filters):
+    """
+    inception 架构模块
+    Args:
+        inputs: 输入数据的尺寸
+        filters: 核数量
+
+    Returns:
+
+    """
+    # 分支1
+    conv_1 = Conv1D(filters=filters, kernel_size=1, strides=1, padding="same", activation="relu")(inputs)
+
+    # 分支2
+    conv_2 = Conv1D(filters=filters, kernel_size=3, strides=1, padding="same", activation="relu")(inputs)
+
+    # 分支3
+    conv_3 = Conv1D(filters=filters, kernel_size=3, strides=1, padding="same", activation="relu")(inputs)
+    conv_3 = Conv1D(filters=filters, kernel_size=3, strides=1, padding="same", activation="relu")(conv_3)
+
+    # 合并
+    outputs = Concatenate(axis=-1)([conv_1, conv_2, conv_3])
+    outputs = Conv1D(filters=filters, kernel_size=1, strides=1, padding="same", activation="relu")(outputs)
+
+    return outputs
+
+
+def se_block(inputs, k):  # SE Block模块
+    # 输入尺寸
+    # ip = Input(shape=(data_lenght,))
+    input_shape = K.int_shape(inputs)
+    # input_shape = Input(shape=(200,))
+
+    # 全局平均池化
+    outputs = GlobalAveragePooling1D()(inputs)
+
+    # 计算每个通道的重要性
+    outputs = Dense(units=int(input_shape[-1] / k), activation="relu")(outputs)
+    outputs = Dense(units=input_shape[-1], activation="sigmoid")(outputs)
+
+    # 重新标定每个通道
+    outputs = RepeatVector(input_shape[1])(outputs)
+    outputs = Reshape([input_shape[1], input_shape[2]])(outputs)
+    outputs = Multiply()([inputs, outputs])
+
+    return outputs
+
+
+# inception maxpooling selection layer
+def ims_layer(inputs, filters, pool_size):
+    """
+    特征提取层
+    Args:
+        inputs: 输入数据的尺寸
+        filters: 核数量
+        pool_size: 池化步长
+
+    Returns:
+
+    """
+
+    inception = inception_block(inputs, filters)
+    pool = MaxPool1D(pool_size=pool_size, strides=pool_size, padding="same")(inception)
+    se = se_block(pool, 4)
+
+    return se
+
+
+def fc_layer(inputs, units):
+    """
+    最后的全连接层
+    Args:
+        inputs:
+        units:
+
+    Returns:
+
+    """
+    outputs = Dense(units=units, activation="relu")(inputs)
+    outputs = Dropout(0.5)(outputs)
+
+    return outputs
+
+
+def inception_model(data_lenght=2000, no_activities=7):
+    """
+    原始输入数据
+    Args:
+        data_length:
+
+    Returns:
+
+    """
+    # raw_input = Input((data_length, 1))
+
+    print('no_activities: %d\n' % (no_activities))
+    ip = Input(shape=(data_lenght,))
+    raw_input = Embedding(128,
+                    64,
+                    # weights=[embedding_matrix],
+                    input_length=data_lenght,
+                    trainable=True)(ip)
+
+    # ims_1
+    ims_1 = ims_layer(raw_input, 64, 2)
+
+    # ims_2
+    ims_2 = ims_layer(ims_1, 128, 3)
+
+    # ims_3
+    ims_3 = ims_layer(ims_2, 256, 3)
+
+    # ims_4
+    ims_4 = ims_layer(ims_3, 256, 3)
+
+    # Flatten
+    flatten = Flatten()(ims_4)
+
+    # 连接原始信号特征和相关系数
+    # concat
+
+    # fc
+    # fc_1
+    fc_1 = fc_layer(flatten, 512)
+    # fc_2
+    fc_2 = fc_layer(fc_1, 512)
+
+    # x_output
+    x_output = Dense(units=no_activities, activation="softmax")(fc_2)
+
+    # 建立模型
+    model = Model(inputs=raw_input, outputs=x_output)
+
+    return model
+
+
 if __name__ == '__main__':
     from keras.utils.vis_utils import plot_model
-    model = WCNNR(no_activities=7)
+    model = inception_model(no_activities=7)
     plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
+    print("success")
     pass

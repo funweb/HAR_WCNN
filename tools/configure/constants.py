@@ -80,6 +80,11 @@ LSTM_CONSTANT = {
     "optimizer": "adam"
 }
 
+INCEPTIONMODEL_CONSTANT = {
+    "model_name": "inception_model",
+}
+
+
 INCEPTION_CONSTANT = {
     "model_name": "inception",
     "nb_iter_": 5,  # inception 个数
@@ -118,3 +123,5 @@ METHOD_PARAMETER_TEMPLATE = {
     "identifier": "20220201",
     "purpose": "validation",  # 更改模型训练的目的
 }
+
+
