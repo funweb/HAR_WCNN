@@ -268,7 +268,7 @@ def fc_layer(inputs, units):
     return outputs
 
 
-def inception_model(no_activities=7, data_lenght=2000):
+def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, kernel_wide_base=1):
     """
     原始输入数据
     Args:
@@ -288,16 +288,16 @@ def inception_model(no_activities=7, data_lenght=2000):
                     trainable=True)(ip)
 
     # ims_1
-    ims_1 = ims_layer(raw_input, 64, 2)
+    ims_1 = ims_layer(raw_input, kernel_number_base*1, 2)
 
     # ims_2
-    ims_2 = ims_layer(ims_1, 128, 3)
+    ims_2 = ims_layer(ims_1, kernel_number_base*2, 3)
 
     # ims_3
-    ims_3 = ims_layer(ims_2, 256, 3)
+    ims_3 = ims_layer(ims_2, kernel_number_base*4, 3)
 
     # ims_4
-    ims_4 = ims_layer(ims_3, 256, 3)
+    ims_4 = ims_layer(ims_3, kernel_number_base*4, 3)
 
     # Flatten
     flatten = Flatten()(ims_4)
@@ -307,9 +307,9 @@ def inception_model(no_activities=7, data_lenght=2000):
 
     # fc
     # fc_1
-    fc_1 = fc_layer(flatten, 512)
+    fc_1 = fc_layer(flatten, kernel_number_base*8)
     # fc_2
-    fc_2 = fc_layer(fc_1, 512)
+    fc_2 = fc_layer(fc_1, kernel_number_base*8)
 
     # x_output
     x_output = Dense(units=no_activities, activation="softmax")(fc_2)

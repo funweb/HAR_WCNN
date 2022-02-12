@@ -83,6 +83,8 @@ LSTM_CONSTANT = {
 INCEPTIONMODEL_CONSTANT = {
     "model_name": "inception_model",
     "optimizer": "adam",
+    "kernel_number_base": "",
+    "kernel_wide_base": ""
 }
 
 
