@@ -95,7 +95,7 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
         # 网络的宽度
         wide_kernal = []
         for i in range(kernel_wide_base):
-            cnn = Conv1D(filters=kernel_number_base, kernel_size=(i + 1) * 2 - 1, padding='same',
+            cnn = Conv1D(filters=kernel_number_base*4, kernel_size=(i + 1) * 2 - 1, padding='same',
                          kernel_initializer=he_uniform(i))(cnn_total)  # 要不要加入激活层, 有待商榷
             wide_kernal.append(cnn)
 
