@@ -267,7 +267,7 @@ def fc_layer(inputs, units):
 
     return outputs
 
-
+from keras.layers import Reshape
 def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, kernel_wide_base=1):
     """
     原始输入数据
@@ -280,12 +280,16 @@ def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, ke
     # raw_input = Input((data_length, 1))
 
     print('no_activities: %d\n' % (no_activities))
-    ip = Input(shape=(data_lenght,))
-    raw_input = Embedding(128,
-                    64,
-                    # weights=[embedding_matrix],
-                    input_length=data_lenght,
-                    trainable=True)(ip)
+    # ip = Input(shape=(data_lenght,))
+    # raw_input = Embedding(128,
+    #                 64,
+    #                 # weights=[embedding_matrix],
+    #                 input_length=data_lenght,
+    #                 trainable=True)(ip)
+
+    ip = Input((data_lenght,))
+
+    raw_input = Reshape((-1, 1), input_shape=(data_lenght, ))(ip)
 
     # ims_1
     ims_1 = ims_layer(raw_input, kernel_number_base*1, 2)
