@@ -268,6 +268,7 @@ def fc_layer(inputs, units):
     return outputs
 
 from keras.layers import Reshape
+# 这个方法可以引用一篇 inception+se 的文章
 def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, kernel_wide_base=1):
     """
     原始输入数据
