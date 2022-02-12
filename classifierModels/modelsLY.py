@@ -268,7 +268,7 @@ def fc_layer(inputs, units):
     return outputs
 
 
-def inception_model(data_lenght=2000, no_activities=7):
+def inception_model(no_activities=7, data_lenght=2000):
     """
     原始输入数据
     Args:

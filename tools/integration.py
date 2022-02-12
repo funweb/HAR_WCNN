@@ -115,6 +115,10 @@ def load_model(dict_config):
                               data_lenght=dict_config['data_lenght'],
                               kernel_number_base=dict_config['kernel_number_base'],
                               kernel_wide_base=dict_config['kernel_wide_base'])
+    elif dict_config["model_name"] == "inception_model":
+        model = modelsLY.inception_model(no_activities=dict_config['no_activities'],
+                                         data_lenght=dict_config['data_lenght'],
+                                         )
 
     else:
         print(
