@@ -78,7 +78,7 @@ def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, ke
     return model
 
 
-def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1):
+def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1, net_deep_base=1):
     print('no_activities: %d\n' % (no_activities))
     ip = Input(shape=(data_lenght,))
     emb = Embedding(vocabulary_size,
@@ -89,14 +89,14 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
 
     # emb = BatchNormalization()(emb)
 
-    cnn_total = emb
+    cnn_total = emb  # 方便下面使用
 
-    for i in range(3):
+    for d in range(net_deep_base):
         # 网络的宽度
         wide_kernal = []
         for i in range(kernel_wide_base):
             cnn = Conv1D(filters=kernel_number_base, kernel_size=(i + 1) * 2 - 1, padding='same',
-                         kernel_initializer=he_uniform(i))(cnn_total)
+                         kernel_initializer=he_uniform(i))(cnn_total)  # 要不要加入激活层, 有待商榷
             wide_kernal.append(cnn)
 
         cnn_total = concatenate(wide_kernal)  # 好像默认: , axis=-1
