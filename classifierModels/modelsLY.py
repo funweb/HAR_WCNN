@@ -104,6 +104,8 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
         else:
             cnn_total = wide_kernal[0]
 
+        cnn_total = Activation('relu')(cnn_total)
+
 
     cnn_total = GlobalMaxPooling1D()(cnn_total)
     # cnn = BatchNormalization(axis=1)(cnn)
