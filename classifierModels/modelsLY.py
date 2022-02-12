@@ -315,7 +315,7 @@ def inception_model(no_activities=7, data_lenght=2000):
     x_output = Dense(units=no_activities, activation="softmax")(fc_2)
 
     # 建立模型
-    model = Model(inputs=raw_input, outputs=x_output)
+    model = Model(inputs=ip, outputs=x_output)
 
     return model
 
