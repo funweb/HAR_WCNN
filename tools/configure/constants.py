@@ -82,6 +82,7 @@ LSTM_CONSTANT = {
 
 INCEPTIONMODEL_CONSTANT = {
     "model_name": "inception_model",
+    "optimizer": "adam",
 }
 
 
