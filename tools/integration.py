@@ -226,6 +226,7 @@ def train(dataset_name, k, cutdatadir, dict_config):
     general.create_folder(log_file_path)
 
     csvFileName = os.path.join(log_file_path, path2name.get_identifier_name(dict_config) + '.csv')
+    history_LY.history["lr"] = np.array(history_LY.history["lr"], dtype=np.float64).tolist()  # 因为都是 float64, 但是其中 'lr' 是float32, 其不受 json 支持, 因此转换一下
     pd.read_json(json.dumps(history_LY.history), encoding="utf-8", orient='records').to_csv(csvFileName)
     print('save in: %s' % (csvFileName))
 
@@ -416,11 +417,13 @@ if __name__ == '__main__':
 
     kernel_number_base = 8
     kernel_wide_base = 1
+    net_deep_base = 1
 
     nb_epochs = 1000  # 公平起见, 默认都是 1000 吧.
 
     MODEL_DEFAULT_CONF["kernel_number_base"] = kernel_number_base
     MODEL_DEFAULT_CONF["kernel_wide_base"] = kernel_wide_base
+    MODEL_DEFAULT_CONF["net_deep_base"] = kernel_wide_base
 
     dict_config_cus = {
 
