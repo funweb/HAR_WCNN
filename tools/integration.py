@@ -8,7 +8,7 @@ import json
 from glob import glob
 
 import numpy as np
-from keras.callbacks import ModelCheckpoint, CSVLogger
+from keras.callbacks import ModelCheckpoint, CSVLogger, ReduceLROnPlateau
 from keras.callbacks import EarlyStopping
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import StratifiedKFold
@@ -183,7 +183,9 @@ def train(dataset_name, k, cutdatadir, dict_config):
                                            mode='min', period=100,  # int(self.nb_epochs/5)
                                            )
 
-    early_stop = EarlyStopping(monitor='acc', patience=dict_config['patience'], verbose=1, mode='auto')
+    early_stop = EarlyStopping(monitor='loss', patience=dict_config['patience'], verbose=1, mode='auto')
+
+    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=50, min_lr=0.0001, verbose=1)
 
     print('Begin training ...')
     history_LY = model.fit_generator(generator=training_generator,
@@ -191,7 +193,7 @@ def train(dataset_name, k, cutdatadir, dict_config):
                                      epochs=dict_config['nb_epochs'],
                                      verbose=int(dict_config['verbose']),
                                      shuffle=dict_config['shuffle'],
-                                     callbacks=[model_checkpoint, early_stop]
+                                     callbacks=[model_checkpoint, early_stop, reduce_lr]
                                      )
 
     #### 保存 final_model 和 best_model
