@@ -185,7 +185,7 @@ def train(dataset_name, k, cutdatadir, dict_config):
 
     early_stop = EarlyStopping(monitor='loss', patience=dict_config['patience'], verbose=1, mode='auto')
 
-    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=50, min_lr=0.0001, verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor='loss', factor=0.2, patience=20, min_lr=0.0001, verbose=1)
 
     print('Begin training ...')
     history_LY = model.fit_generator(generator=training_generator,
