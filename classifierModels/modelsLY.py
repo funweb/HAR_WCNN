@@ -110,10 +110,9 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
     cnn_total = GlobalMaxPooling1D()(cnn_total)
     # cnn = BatchNormalization(axis=1)(cnn)
 
-    dcnn1 = Dense(4*kernel_number_base)(cnn_total)
+    dcnn1 = Dense(6*kernel_number_base)(cnn_total)
     dcnn1 = Activation('relu')(dcnn1)
     dcnn1 = Dropout(0.4)(dcnn1)
-
 
     dcnn2 = Dense(4*kernel_number_base)(dcnn1)
     dcnn2 = Activation('relu')(dcnn2)
