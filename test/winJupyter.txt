@@ -1,0 +1,13 @@
+在服务状态下，出现了一个故障，而若在cmd命令框下是正常的：
+在选择kernel时会提示报错：
+pywintypes.error: (1332, 'LookupAccountName', '帐户名与安全标识间无任何映射完成。')
+
+这个错误应该是和服务运行的账户权限有关，通过以下方法来解决。
+conda环境下的 lib/site-packages/jupyter_core，打开paths.py，搜索 win32security.LookupAccountName：
+
+user, _domain, _type = win32security.LookupAccountName("", win32api.GetUserNameEx(win32api.NameSamCompatible))
+
+变为
+
+user, _domain, _type = win32security.LookupAccountName("", win32api.GetUserName())
+

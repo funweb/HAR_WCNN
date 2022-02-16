@@ -279,6 +279,35 @@ def fix_sys_path(root_path):
                 pass  # path might not have been added to sys.path
 
 
+import numpy as np
+
+def getAvailableId(type="min"):
+    """
+    返回可用的 GPU ID
+    Args:
+        type: sequence, min,
+
+    Returns:
+
+    """
+    import pynvml
+
+    pynvml.nvmlInit()
+
+    deviceCount = pynvml.nvmlDeviceGetCount()
+    current_gpu_unit_use = []
+    for id in range(deviceCount):
+        handle = pynvml.nvmlDeviceGetHandleByIndex(id)
+        use = pynvml.nvmlDeviceGetUtilizationRates(handle)
+        if use.memory < 80:  # 首先保证有可用内存, 然后选择运行着比较小计算量的GPU
+            current_gpu_unit_use.append(use.gpu)
+    pynvml.nvmlShutdown()
+
+    if current_gpu_unit_use == []:
+        return str(-1)
+    else:
+        return str(np.argmin(current_gpu_unit_use))
+
 
 if __name__ == '__main__':
     # print(load_config("configure/config.yaml"))
