@@ -294,6 +294,8 @@ def getAvailableId(type="min"):
 
     pynvml.nvmlInit()
 
+    time.sleep(5)  # 等待 5s 使得其他程序就绪
+
     deviceCount = pynvml.nvmlDeviceGetCount()
     current_gpu_unit_use = []
     for id in range(deviceCount):
