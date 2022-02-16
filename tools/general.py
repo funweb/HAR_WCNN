@@ -300,7 +300,8 @@ def getAvailableId(type="min"):
         handle = pynvml.nvmlDeviceGetHandleByIndex(id)
         use = pynvml.nvmlDeviceGetUtilizationRates(handle)
         if use.memory < 80:  # 首先保证有可用内存, 然后选择运行着比较小计算量的GPU
-            current_gpu_unit_use.append(use.gpu)
+            if use.gpu < 90:
+                current_gpu_unit_use.append(use.gpu)
     pynvml.nvmlShutdown()
 
     print("GPU used: {}".format(current_gpu_unit_use))
