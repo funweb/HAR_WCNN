@@ -303,6 +303,8 @@ def getAvailableId(type="min"):
             current_gpu_unit_use.append(use.gpu)
     pynvml.nvmlShutdown()
 
+    print("GPU used: {}".format(current_gpu_unit_use))
+
     if current_gpu_unit_use == []:
         return str(-1)
     else:
