@@ -14,6 +14,9 @@ def get_identifier_name(dict_config, other_parameter=""):
 
     if "kernel_number_base" in dict_config:
         base_identifier = "%s_%s" % (base_identifier, str(dict_config['kernel_number_base']))
+    if "net_deep_base" in dict_config:
+        base_identifier = "%s_%s" % (base_identifier, str(dict_config['net_deep_base']))
+
     if other_parameter != "":
         base_identifier = "%s_%s" % (base_identifier, other_parameter)
 
