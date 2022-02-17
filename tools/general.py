@@ -3,12 +3,15 @@ import sys
 
 import keras
 import numpy as np
+import pandas as pd
 import yaml
 import os
 import time
 import shutil
 import emoji  # https://carpedm20.github.io/emoji/all.html
 from keras.callbacks import Callback
+
+from tools import path2name
 
 
 def clock(func):
@@ -315,6 +318,38 @@ def getAvailableId(type="min"):
         GPU_NUM = str(np.argmin(current_gpu_unit_use))
     print("GPU used: {}, final choose: {}".format(current_gpu_unit_use, GPU_NUM))
     return GPU_NUM
+
+
+def static_distant(dict_config_cus):
+    base_identifier = path2name.get_identifier_name(dict_config_cus)
+
+    distants = ['9999', '999', '1', '2', '3', '4', '5']
+    df = pd.DataFrame(columns=(distants), index=(str(dict_config_cus["num"]), "std"))
+
+    for distant in distants:
+
+        file_path = os.path.join(dict_config_cus["datasets_dir"], "results", dict_config_cus["model_name"],
+                                 dict_config_cus["dataset_name"], str(distant), base_identifier, "log",
+                                 base_identifier + "_final.csv")
+
+        acc_final = []
+
+        with open(file_path, encoding="utf-8") as fw:
+            lines = fw.readlines()
+            for line in lines:
+                acc = line[1:-2].split(",")[1]
+                acc_final.append(float(acc))
+
+        #     print(acc_final)
+
+        np.std(acc_final) * 100
+        np.mean(acc_final) * 100
+
+        docu_index = dict_config_cus["num"]
+        df.loc[docu_index][str(distant)] = np.mean(acc_final) * 100
+        df.loc["std"][str(distant)] = np.std(acc_final) * 100
+
+    return df
 
 
 if __name__ == '__main__':
