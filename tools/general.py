@@ -324,7 +324,7 @@ def static_distant(dict_config_cus):
     base_identifier = path2name.get_identifier_name(dict_config_cus)
 
     distants = ['9999', '999', '1', '2', '3', '4', '5']
-    df = pd.DataFrame(columns=(distants), index=(str(dict_config_cus["num"]), "std"))
+    df = pd.DataFrame(columns=(distants), index=("0", "1", "2", str(dict_config_cus["num"]), "std"))
 
     for distant in distants:
 
@@ -336,9 +336,11 @@ def static_distant(dict_config_cus):
 
         with open(file_path, encoding="utf-8") as fw:
             lines = fw.readlines()
-            for line in lines:
+            for i, line in enumerate(lines):
                 acc = line[1:-2].split(",")[1]
                 acc_final.append(float(acc))
+
+                df.loc[str(i)][str(distant)] = acc * 100
 
         #     print(acc_final)
 
