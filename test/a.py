@@ -1,9 +1,5 @@
-d = {
-    "i" for i in range(3)
-     }
+from glob import glob
 
+for i in glob("../*ipynb"):
+    print(i)
 
-d["a"].update({"aa":1})
-d["a"].update({"bb":1})
-
-print(d)
