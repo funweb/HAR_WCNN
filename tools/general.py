@@ -358,57 +358,6 @@ def static_distant(dict_config_cus, detail=True):
     return df
 
 
-def showResult(dict_config_cus, detail=True):
-    """
-    通过 df 显示结果
-    Args:
-        dict_config_cus:
-        detail:
-
-    Returns:
-
-    """
-    itr_str = "inception-"
-    for itr in dict_config_cus["nb_iter_"]:
-        # if itr == 0:
-        #     itr_str = ''
-        # else:
-        itr_str = itr_str + str(itr) + "-"
-
-    if detail:
-        index_list = ["0", "1", "2", "precision_mean", "precision_std",
-                      "0", "1", "2", "accuracy_mean", "accuracy_std",
-                      "0", "1", "2", "recall_mean", "recall_std",
-                      "0", "1", "2", "f1_mean", "f1_std",
-                      "0", "1", "2", "duration_mean", "duration_std",
-                      ]
-    else:
-        index_list = ["acc_mean", "acc_std"]
-
-    df = pd.DataFrame(index=index_list)
-
-    for distant in ["9999", "999", "1", "2", "3", "4", "5"]:
-        sub_csv_path = os.path.join(dict_config_cus["base_dir"],
-                               dict_config_cus["data_length"], "nne", itr_str,
-                               dict_config_cus["archive_name"],
-                               dict_config_cus["dataset_name"],
-                               str(distant),
-                               "ksplit_ave.csv"
-                               )
-        sub_csv = pd.read_csv(sub_csv_path)
-        sub_csv_list = sub_csv.loc[:, "precision"].tolist() + \
-                       sub_csv.loc[:, "accuracy"].tolist() + \
-                       sub_csv.loc[:, "recall"].tolist() + \
-                       sub_csv.loc[:, "f1"].tolist() + \
-                       sub_csv.loc[:, "duration"].tolist()
-        df[distant] = sub_csv_list
-
-    csv_path = os.path.join(sub_csv_path, "..", "result_df.csv")
-    df.to_csv(csv_path)
-
-    return df
-
-
 if __name__ == '__main__':
     # print(load_config("configure/config.yaml"))
     print(colorstr("bold", "bright_red", 222))
