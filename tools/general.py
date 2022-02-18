@@ -340,7 +340,7 @@ def static_distant(dict_config_cus):
                 acc = line[1:-2].split(",")[1]
                 acc_final.append(float(acc))
 
-                df.loc[str(i)][str(distant)] = acc * 100
+                df.loc[str(i)][str(distant)] = float(acc) * 100
 
         #     print(acc_final)
 
