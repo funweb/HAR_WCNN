@@ -78,11 +78,16 @@ def WCNN(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, ke
     return model
 
 
+def embedding_init():
+    return keras.initializers.TruncatedNormal(mean=0.0, stddev=0.05, seed=7)
+
+
 def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, kernel_number_base=8, kernel_wide_base=1, net_deep_base=1):
     print('no_activities: %d\n' % (no_activities))
     ip = Input(shape=(data_lenght,))
     emb = Embedding(vocabulary_size,
                     output_dim,
+                    embeddings_initializer=embedding_init(),
                     # weights=[embedding_matrix],
                     input_length=data_lenght,
                     trainable=True)(ip)
