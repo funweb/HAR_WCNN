@@ -301,22 +301,21 @@ def getAvailableId(type="min"):
 
     deviceCount = pynvml.nvmlDeviceGetCount()
     current_gpu_unit_use = []
+    current_gpu_memory_use = []
     for id in range(deviceCount):
         handle = pynvml.nvmlDeviceGetHandleByIndex(id)
         use = pynvml.nvmlDeviceGetUtilizationRates(handle)
-        if use.memory < 80:  # 首先保证有可用内存, 然后选择运行着比较小计算量的GPU
-            # if use.gpu < 90:
-            current_gpu_unit_use.append(use.gpu)
-        else:
-            current_gpu_unit_use.append(100)
+
+        current_gpu_memory_use.append(use.memory)  # 统计内存的使用
+        current_gpu_unit_use.append(use.gpu)  # 统计计算单元的使用
 
     pynvml.nvmlShutdown()
 
-    if current_gpu_unit_use == []:
+    if current_gpu_unit_use == []:  # 无显卡  ### 是否设置当GPU用的多少多时候也用上CPU呢?
         GPU_NUM = str(-1)
     else:
-        GPU_NUM = str(np.argmin(current_gpu_unit_use))
-    print("GPU used: {}, final choose: {}".format(current_gpu_unit_use, GPU_NUM))
+        GPU_NUM = str(np.argmin(np.array(current_gpu_memory_use) + np.array(current_gpu_unit_use)))
+    print("GPU used: \nmemory: {}, unit: {}. \n final choose: {}".format(current_gpu_memory_use, current_gpu_unit_use, GPU_NUM))
     return GPU_NUM
 
 
