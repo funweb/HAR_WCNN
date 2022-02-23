@@ -322,7 +322,12 @@ def inception_model(no_activities=7, data_lenght=2000, kernel_number_base=64, ke
 
 if __name__ == '__main__':
     from keras.utils.vis_utils import plot_model
-    model = WCNNR(no_activities=7, kernel_wide_base=4)
+
+    kernel_wide_base = 8
+    kernel_number_base = 8
+    net_deep_base = 2
+
+    model = WCNNR(no_activities=7, kernel_wide_base=kernel_wide_base, kernel_number_base=kernel_number_base,net_deep_base=net_deep_base)
     plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
     print("success")
     pass
