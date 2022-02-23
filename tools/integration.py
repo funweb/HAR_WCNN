@@ -423,7 +423,7 @@ if __name__ == '__main__':
 
     MODEL_DEFAULT_CONF["kernel_number_base"] = kernel_number_base
     MODEL_DEFAULT_CONF["kernel_wide_base"] = kernel_wide_base
-    MODEL_DEFAULT_CONF["net_deep_base"] = kernel_wide_base
+    MODEL_DEFAULT_CONF["net_deep_base"] = net_deep_base
 
     dict_config_cus = {
 

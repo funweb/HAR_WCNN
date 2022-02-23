@@ -325,9 +325,11 @@ if __name__ == '__main__':
 
     kernel_wide_base = 8
     kernel_number_base = 8
-    net_deep_base = 2
-
+    net_deep_base = 1
     model = WCNNR(no_activities=7, kernel_wide_base=kernel_wide_base, kernel_number_base=kernel_number_base,net_deep_base=net_deep_base)
+
+    model = WCNN(no_activities=7)
+
     plot_model(model, to_file='model.png', show_shapes=True, show_layer_names=True)
     print("success")
     pass
