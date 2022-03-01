@@ -92,7 +92,7 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
                     input_length=data_lenght,
                     trainable=True)(ip)
 
-    # emb = BatchNormalization()(emb)
+    emb = BatchNormalization()(emb)  # 看来标准化不能去除
 
     cnn_total = emb  # 方便下面使用
 
@@ -113,7 +113,7 @@ def WCNNR(no_activities, vocabulary_size=188, output_dim=64, data_lenght=2000, k
 
 
     cnn_total = GlobalMaxPooling1D()(cnn_total)
-    # cnn = BatchNormalization(axis=1)(cnn)
+    cnn = BatchNormalization(axis=1)(cnn)  # 看来正则化不能去除
 
     dcnn1 = Dense(6*kernel_number_base)(cnn_total)
     dcnn1 = Activation('relu')(dcnn1)
