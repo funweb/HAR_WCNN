@@ -402,24 +402,25 @@ def train_val(dict_config_cus):
 
 if __name__ == '__main__':
 
-    from tools.configure.constants import WCNNR_CONSTANT as MODEL_DEFAULT_CONF
+    # from tools.configure.constants import WCNNR_CONSTANT as MODEL_DEFAULT_CONF
+    from tools.configure.constants import LSTM_CONSTANT as MODEL_DEFAULT_CONF
 
     # os.chdir('../')
     print(os.getcwd())
 
     distance_int = 9999
-    dataset_name = 'cairo'
+    dataset_name = 'kyoto7'
     calculation_unit = "0"
 
     # 修订论文所需要的
     batch_size = 64
-    data_lenght = 30
+    data_lenght = 300
 
     kernel_number_base = 8
     kernel_wide_base = 1
     net_deep_base = 1
 
-    nb_epochs = 1000  # 公平起见, 默认都是 1000 吧.
+    nb_epochs = 200  # 公平起见, 默认都是 1000 吧.
 
     MODEL_DEFAULT_CONF["kernel_number_base"] = kernel_number_base
     MODEL_DEFAULT_CONF["kernel_wide_base"] = kernel_wide_base

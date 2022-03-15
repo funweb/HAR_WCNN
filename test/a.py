@@ -1,37 +1,45 @@
-import os
-import shutil
-import time
+import pandas as pd
+import itertools  # 排列组合
+from CVTest5x2 import five_two_statistic
 
-op_dir = os.path.join("..")
+if __name__ == '__main__':
+    data_df = pd.read_csv("tmp.csv")
 
-source_file_name = "531_kyoto11_WCNNR_2000_64_1000_1_1_1_1.ipynb"
-target_file_name = "{tag}_{dataname}_{method}_{data_length}_{batch_size}_{epochs}_{kernel_wide_base}_{kernel_number_base}_{net_deep_base}_1.ipynb"
+    random_seeds = [26, 43, 7, 13,  35,]
 
-tag = 531
-dataname = "kyoto11"
-method = "WCNNR"
-data_length = 2000
-batch_size = 64
-epochs = 1000
-kernel_wide_base = 1
-kernel_number_base = 1
-net_deep_base = 1
+    distants = [9999, 999, 1, 2, 3, 4, 5]
 
-copy_num = 14
+    method_condition = "WCNN"
+    datasets = ["cairo", "milan", "kyoto7", "kyoto8", "kyoto11"]
 
-source_file = os.path.join(op_dir, source_file_name)
+    for dataset_condition in datasets:
+        print("\n\n\n")
+        # 通过 方法 和 数据集 约束数据
+        condition_df = data_df[data_df['method'].str.contains(method_condition)]
+        condition_df = condition_df[condition_df['dataset'].str.contains(dataset_condition)]
 
-for i in range(copy_num):
-    tag += 1
-    kernel_wide_base += 1
+        # 通过 0/1 交叉约束数据
+        condition_df_0 = condition_df[condition_df["k"] == 0]
+        condition_df_1 = condition_df[condition_df["k"] == 1]
 
-    target_file = os.path.join(op_dir, target_file_name.format(tag=tag, dataname=dataname, method=method,
-                                                               data_length=data_length, batch_size=batch_size,
-                                                               epochs=epochs, kernel_wide_base=kernel_wide_base,
-                                                               kernel_number_base=kernel_number_base,
-                                                               net_deep_base=net_deep_base))
-    assert not os.path.exists(target_file), "文件已存在, 请查验"
+        # 分别计算
+        for ds_A, ds_B in itertools.combinations(distants, 2):  # 各种组合
+            p_1_list = []
+            p_2_list = []
+            for rs in random_seeds:  # 也就是5次交叉结果
+                p_A_0 = condition_df_0[condition_df_0["random"] == rs][str(ds_A)].values[0]
+                p_B_0 = condition_df_0[condition_df_0["random"] == rs][str(ds_B)].values[0]
+                p_1 = p_A_0 - p_B_0
+                p_1_list.append(p_1)
 
-    print("{}->\n{}\n\n".format(source_file, target_file))
-    time.sleep(3)
-    shutil.copy(source_file, target_file)
+                p_A_1 = condition_df_1[condition_df_1["random"] == rs][str(ds_A)].values[0]
+                p_B_1 = condition_df_1[condition_df_1["random"] == rs][str(ds_B)].values[0]
+                p_2 = p_A_1 - p_B_1
+                p_2_list.append(p_2)
+
+            # print("5x2 CV Paired t-test")
+            t, p = five_two_statistic(p_1_list, p_2_list)
+            # print(f"pair: {ds_A, ds_B}, t statistic: {t}, p-value: {p}\n")
+            if ds_A == 9999 and ds_B != 999:
+                if t < 0:
+                    print(f"dataset: {dataset_condition}, pair: {ds_A, ds_B}, t statistic: {t}, p-value: {p}")
